@@ -21,21 +21,21 @@ def openDatabase(filepath, create=False):
     CREATE TABLE IF NOT EXISTS folders (
       id INTEGER NOT NULL PRIMARY KEY,
       path TEXT NOT NULL,
-      virtual BOOL DEFAULT FALSE
+      fileid INTEGER
     )
     ""","""
     CREATE INDEX IF NOT EXISTS folders_idx ON folders(path)
     ""","""
     CREATE TABLE IF NOT EXISTS files (
       id INTEGER NOT NULL PRIMARY KEY,
-      pid INTEGER NOT NULL,
+      folderid INTEGER NOT NULL,
       name TEXT NOT NULL,
       size LONG,
       mtime LONG,
       lastseen LONG
     )
     ""","""
-    CREATE INDEX IF NOT EXISTS files_idx ON files(pid,name)
+    CREATE UNIQUE INDEX IF NOT EXISTS files_idx ON files(name,folderid)
     """]
     for sql in stmts:
       db.execute(sql)
@@ -44,7 +44,7 @@ def openDatabase(filepath, create=False):
 maindb = None
 foldercache = {}
 
-def getFolderID(db, folderpath, create=False, virtual=False):
+def getFolderID(db, folderpath, create=False, fileid=None):
   id = foldercache.get(folderpath)
   if id:
     return id
@@ -53,23 +53,19 @@ def getFolderID(db, folderpath, create=False, virtual=False):
     id = row[0]
   else:
     cur = db.cursor()
-    cur.execute("INSERT INTO folders (path,virtual) VALUES (?,?)", [folderpath, virtual])
+    cur.execute("INSERT INTO folders (path,fileid) VALUES (?,?)", [folderpath, fileid])
     id = cur.lastrowid
   foldercache[folderpath] = id
   return id
 
-def getFileExtension(path):
-  i = path.rindex('.')
-  return path[i+1:] if i>0 else None
-
-def addFileEntry(containerKey, filename, size, mtime, virtual=False):
-  containerKey = containerKey.decode('utf-8')
-  filename = filename.decode('utf-8')
+def addFileEntry(path, size, mtime, containerid=None):
+  path = path.decode('utf-8')
+  folderpath,filename = os.path.split(path)
   mtime = fixTimestamp(mtime)
-  pid = getFolderID(maindb, containerKey, virtual)
-  print (pid, containerKey, filename, size, mtime)
+  folderid = getFolderID(maindb, folderpath, fileid=containerid)
+  print (folderid, folderpath, filename, size, mtime)
   cur = maindb.cursor()
-  cur.execute("REPLACE INTO files (pid,name,size,mtime,lastseen) VALUES (?,?,?,?,?)", [containerKey, filename, size, mtime, sessionStartTime])
+  cur.execute("INSERT OR REPLACE INTO files (folderid,name,size,mtime,lastseen) VALUES (?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime])
   return cur.lastrowid
 
 def fixTimestamp(ts):
@@ -79,16 +75,16 @@ def fixTimestamp(ts):
   else:
     return long(ts)
 
-def processTarFile(containerKey, path):
+def processTarFile(containerKey, path, containerid=None):
   with tarfile.open(path, 'r') as tarf:
     for info in tarf:
       if info.isfile():
-        addFileEntry( containerKey, info.name, info.size, info.mtime, virtual=True )
+        addFileEntry( os.path.join(containerKey, info.name), info.size, info.mtime, containerid=containerid )
 
-def processZipFile(containerKey, path):
+def processZipFile(containerKey, path, containerid=None):
   with zipfile.ZipFile(path, 'r') as zipf:
     for info in zipf.infolist():
-      addFileEntry( containerKey, info.filename, info.file_size, info.date_time, virtual=True )
+      addFileEntry( os.path.join(containerKey, info.filename), info.file_size, info.date_time, containerid=containerid )
 
 def processFile(rootDir, containerKey, filename):
   #print rootDir, containerKey, filename
@@ -100,11 +96,11 @@ def processFile(rootDir, containerKey, filename):
   mtime = min(stat.st_atime, stat.st_mtime, stat.st_ctime)
   size = stat.st_size
   #first,second = os.path.split(key)
-  addFileEntry(containerKey, filename, size, mtime)
+  fileid = addFileEntry(key, size, mtime)
   if filename.endswith(EXTS_TAR):
-    processTarFile(key, path)
+    processTarFile(key, path, containerid=fileid)
   elif filename.endswith(EXTS_ZIP):
-    processZipFile(key, path)
+    processZipFile(key, path, containerid=fileid)
 
 def walkDirectory(rootDir, startDir):
   # is it a file?
