@@ -13,6 +13,9 @@ sessionStartTime = long(time.time())
 
 def openDatabase(filepath, create=False):
   db = sqlite3.connect(filepath)
+  db.execute('PRAGMA journal_mode = MEMORY')
+  db.execute('PRAGMA synchronous = OFF')
+  db.execute('PRAGMA page_size = 4096')
   if create:
     stmts = ["""
     CREATE TABLE IF NOT EXISTS folders (
@@ -21,7 +24,10 @@ def openDatabase(filepath, create=False):
       virtual BOOL DEFAULT FALSE
     )
     ""","""
+    CREATE INDEX IF NOT EXISTS folders_idx ON folders(path)
+    ""","""
     CREATE TABLE IF NOT EXISTS files (
+      id INTEGER NOT NULL PRIMARY KEY,
       pid INTEGER NOT NULL,
       name TEXT NOT NULL,
       size LONG,
@@ -57,11 +63,14 @@ def getFileExtension(path):
   return path[i+1:] if i>0 else None
 
 def addFileEntry(containerKey, filename, size, mtime, virtual=False):
+  containerKey = containerKey.decode('utf-8')
+  filename = filename.decode('utf-8')
   mtime = fixTimestamp(mtime)
   pid = getFolderID(maindb, containerKey, virtual)
-  print pid, containerKey, filename, size, mtime
+  print (pid, containerKey, filename, size, mtime)
   cur = maindb.cursor()
   cur.execute("REPLACE INTO files (pid,name,size,mtime,lastseen) VALUES (?,?,?,?,?)", [containerKey, filename, size, mtime, sessionStartTime])
+  return cur.lastrowid
 
 def fixTimestamp(ts):
   if type(ts) == type((0,)):
@@ -74,8 +83,7 @@ def processTarFile(containerKey, path):
   with tarfile.open(path, 'r') as tarf:
     for info in tarf:
       if info.isfile():
-        name = info.name.decode('utf-8')
-        addFileEntry( containerKey, name, info.size, info.mtime, virtual=True )
+        addFileEntry( containerKey, info.name, info.size, info.mtime, virtual=True )
 
 def processZipFile(containerKey, path):
   with zipfile.ZipFile(path, 'r') as zipf:
@@ -84,8 +92,10 @@ def processZipFile(containerKey, path):
 
 def processFile(rootDir, containerKey, filename):
   #print rootDir, containerKey, filename
-  key = '%s/%s' % (containerKey, filename)
-  path = '%s/%s' % (rootDir, key)
+  #key = u'%s/%s' % (containerKey, filename)
+  #path = u'%s/%s' % (rootDir, key)
+  key = os.path.join(containerKey, filename)
+  path = os.path.join(rootDir, containerKey, filename)
   stat = os.stat(path)
   mtime = min(stat.st_atime, stat.st_mtime, stat.st_ctime)
   size = stat.st_size
@@ -107,6 +117,7 @@ def walkDirectory(rootDir, startDir):
     containerKey = dirName[len(rootDir)+1:] # TODO: slashes matter
     for filePath in fileList:
       processFile(rootDir, containerKey, filePath)
+      maindb.commit()
 
 def findRootDir(path):
   if len(path)<2:
