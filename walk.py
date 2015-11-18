@@ -3,11 +3,13 @@
 import sys,os,os.path,datetime,time
 import tarfile,zipfile
 import sqlite3
+#import iso9660
 
 METADIR='.arc'
 
 EXTS_TAR = ('.tar','.tgz','.tbz2','.tar.gz','.tar.bz2')
 EXTS_ZIP = ('.zip')
+EXTS_ISO9660 = ('.iso','.iso9660')
 
 sessionStartTime = long(time.time())
 
@@ -44,6 +46,9 @@ def openDatabase(filepath, create=False):
 maindb = None
 foldercache = {}
 
+def joinPaths(a, b):
+  return (a + '/' + b).replace('//','/')
+
 def getFolderID(db, folderpath, create=False, fileid=None):
   id = foldercache.get(folderpath)
   if id:
@@ -59,7 +64,11 @@ def getFolderID(db, folderpath, create=False, fileid=None):
   return id
 
 def addFileEntry(path, size, mtime, containerid=None):
-  path = path.decode('utf-8')
+  try:
+    path = path.decode('UTF-8')
+  except UnicodeDecodeError:
+    print sys.exc_info()
+    path = path.decode('cp1252') #TODO?
   folderpath,filename = os.path.split(path)
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(maindb, folderpath, fileid=containerid)
@@ -72,6 +81,8 @@ def fixTimestamp(ts):
   if type(ts) == type((0,)):
     dt = apply(datetime.datetime, ts)
     return long(time.mktime(dt.timetuple()))
+  elif ts == None:
+    return None
   else:
     return long(ts)
 
@@ -79,12 +90,17 @@ def processTarFile(containerKey, path, containerid=None):
   with tarfile.open(path, 'r') as tarf:
     for info in tarf:
       if info.isfile():
-        addFileEntry( os.path.join(containerKey, info.name), info.size, info.mtime, containerid=containerid )
+        addFileEntry( joinPaths(containerKey, info.name), info.size, info.mtime, containerid=containerid )
 
 def processZipFile(containerKey, path, containerid=None):
   with zipfile.ZipFile(path, 'r') as zipf:
     for info in zipf.infolist():
-      addFileEntry( os.path.join(containerKey, info.filename), info.file_size, info.date_time, containerid=containerid )
+      addFileEntry( joinPaths(containerKey, info.filename), info.file_size, info.date_time, containerid=containerid )
+
+def processISO9660File(containerKey, path, containerid=None):
+  isof = iso9660.ISO9660(path)
+  for path in isof.tree():
+    addFileEntry( joinPaths(containerKey, path), None, None )
 
 def processFile(rootDir, containerKey, filename):
   #print rootDir, containerKey, filename
@@ -101,6 +117,8 @@ def processFile(rootDir, containerKey, filename):
     processTarFile(key, path, containerid=fileid)
   elif filename.endswith(EXTS_ZIP):
     processZipFile(key, path, containerid=fileid)
+  #elif filename.endswith(EXTS_ISO9660):
+  #  processISO9660File(key, path, containerid=fileid)
 
 def walkDirectory(rootDir, startDir):
   # is it a file?
