@@ -5,6 +5,18 @@ import tarfile,zipfile
 import sqlite3
 import libarchive
 
+# logging
+import logging
+logger = logging.getLogger('libarchive')
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+###
+
 METADIR='.arc'
 
 EXTS_TAR = ('.tar','.tgz','.tbz2','.tar.gz','.tar.bz2')
@@ -72,11 +84,12 @@ def getFolderID(db, folderpath, create=False, fileid=None):
   return id
 
 def addFileEntry(path, size, mtime, containerid=None):
-  try:
-    path = path.decode('UTF-8')
-  except UnicodeDecodeError:
-    print sys.exc_info()
-    path = path.decode('cp1252') #TODO?
+  if type(path) != type(u''):
+    try:
+      path = path.decode('UTF-8')
+    except UnicodeEncodeError:
+      print sys.exc_info()
+      path = path.decode('cp1252') #TODO?
   folderpath,filename = os.path.split(path)
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(maindb, folderpath, fileid=containerid)
@@ -125,13 +138,16 @@ def processFile(rootDir, containerKey, filename):
   try:
     fn = filename
     if fn.endswith(EXTS_COMPRESS):
-      fn = os.path.splitext(fn[1])
+      fn = os.path.splitext(fn)[0]
     if fn.endswith(EXTS_ZIP):
       processZipFile(key, path, containerid=fileid)
     elif fn.endswith(EXTS_ARCHIVE):
       processArchive(key, path, containerid=fileid)
+  except KeyboardInterrupt:
+    maindb.rollback()
+    raise
   except:
-    print sys.exc_info()
+    print 'ERROR',sys.exc_info()
     maindb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[0]), fileid])
 
 def walkDirectory(rootDir, startDir):
@@ -157,7 +173,6 @@ def findRootDir(path):
       return os.path.dirname(metaDir)
 
   return findRootDir(os.path.dirname(path))
-  
 
 ###
 
