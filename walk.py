@@ -93,10 +93,14 @@ def addFileEntry(path, size, mtime, containerid=None):
   folderpath,filename = os.path.split(path)
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(maindb, folderpath, fileid=containerid)
-  print (folderid, folderpath, filename, size, mtime)
   cur = maindb.cursor()
-  cur.execute("INSERT OR REPLACE INTO files (folderid,name,size,mtime,lastseen,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
-  return cur.lastrowid
+  fileinfo = cur.execute("SELECT id,size,mtime FROM files WHERE folderid=? AND name=? AND size=? AND mtime=?", [folderid, filename, size, mtime]).fetchone()
+  if fileinfo:
+    return fileinfo
+  else:
+    print (folderid, folderpath, filename, size, mtime)
+    cur.execute("INSERT OR REPLACE INTO files (folderid,name,size,mtime,lastseen,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
+    return long(cur.lastrowid)
 
 def fixTimestamp(ts):
   if type(ts) == type((0,)):
@@ -135,20 +139,21 @@ def processFile(rootDir, containerKey, filename):
   size = stat.st_size
   #first,second = os.path.split(key)
   fileid = addFileEntry(key, size, mtime)
-  try:
-    fn = filename
-    if fn.endswith(EXTS_COMPRESS):
-      fn = os.path.splitext(fn)[0]
-    if fn.endswith(EXTS_ZIP):
-      processZipFile(key, path, containerid=fileid)
-    elif fn.endswith(EXTS_ARCHIVE):
-      processArchive(key, path, containerid=fileid)
-  except KeyboardInterrupt:
-    maindb.rollback()
-    raise
-  except:
-    print 'ERROR',sys.exc_info()
-    maindb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[0]), fileid])
+  if type(fileid) == type(0L):
+    try:
+      fn = filename
+      if fn.endswith(EXTS_COMPRESS):
+        fn = os.path.splitext(fn)[0]
+      if fn.endswith(EXTS_ZIP):
+        processZipFile(key, path, containerid=fileid)
+      elif fn.endswith(EXTS_ARCHIVE):
+        processArchive(key, path, containerid=fileid)
+    except KeyboardInterrupt:
+      maindb.rollback()
+      raise
+    except:
+      print 'ERROR',sys.exc_info()
+      maindb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[0]), fileid])
 
 def walkDirectory(rootDir, startDir):
   # is it a file?
