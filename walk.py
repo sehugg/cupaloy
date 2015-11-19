@@ -3,13 +3,20 @@
 import sys,os,os.path,datetime,time
 import tarfile,zipfile
 import sqlite3
-#import iso9660
+import libarchive
 
 METADIR='.arc'
 
 EXTS_TAR = ('.tar','.tgz','.tbz2','.tar.gz','.tar.bz2')
 EXTS_ZIP = ('.zip')
 EXTS_ISO9660 = ('.iso','.iso9660')
+EXTS_ARCHIVE = (
+  '.tar','.tgz','.tbz2',
+  '.zip',
+  '.iso',
+  '.pax', '.cpio', '.xar', '.lha', '.ar', '.cab', '.mtree', '.rar'
+)
+EXTS_COMPRESS = ('.gz','.bz2','.z','.lz','.xz','.lzma')
 
 sessionStartTime = long(time.time())
 
@@ -34,7 +41,8 @@ def openDatabase(filepath, create=False):
       name TEXT NOT NULL,
       size LONG,
       mtime LONG,
-      lastseen LONG
+      lastseen LONG,
+      errors TEXT
     )
     ""","""
     CREATE UNIQUE INDEX IF NOT EXISTS files_idx ON files(name,folderid)
@@ -74,7 +82,7 @@ def addFileEntry(path, size, mtime, containerid=None):
   folderid = getFolderID(maindb, folderpath, fileid=containerid)
   print (folderid, folderpath, filename, size, mtime)
   cur = maindb.cursor()
-  cur.execute("INSERT OR REPLACE INTO files (folderid,name,size,mtime,lastseen) VALUES (?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime])
+  cur.execute("INSERT OR REPLACE INTO files (folderid,name,size,mtime,lastseen,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
   return cur.lastrowid
 
 def fixTimestamp(ts):
@@ -97,10 +105,11 @@ def processZipFile(containerKey, path, containerid=None):
     for info in zipf.infolist():
       addFileEntry( joinPaths(containerKey, info.filename), info.file_size, info.date_time, containerid=containerid )
 
-def processISO9660File(containerKey, path, containerid=None):
-  isof = iso9660.ISO9660(path)
-  for path in isof.tree():
-    addFileEntry( joinPaths(containerKey, path), None, None )
+def processArchive(containerKey, path, containerid=None):
+  with libarchive.file_reader(path) as archive:
+    for entry in archive:
+      if entry.isfile:
+        addFileEntry( joinPaths(containerKey, entry.path), entry.size, entry.mtime, containerid=containerid )
 
 def processFile(rootDir, containerKey, filename):
   #print rootDir, containerKey, filename
@@ -113,12 +122,17 @@ def processFile(rootDir, containerKey, filename):
   size = stat.st_size
   #first,second = os.path.split(key)
   fileid = addFileEntry(key, size, mtime)
-  if filename.endswith(EXTS_TAR):
-    processTarFile(key, path, containerid=fileid)
-  elif filename.endswith(EXTS_ZIP):
-    processZipFile(key, path, containerid=fileid)
-  #elif filename.endswith(EXTS_ISO9660):
-  #  processISO9660File(key, path, containerid=fileid)
+  try:
+    fn = filename
+    if fn.endswith(EXTS_COMPRESS):
+      fn = os.path.splitext(fn[1])
+    if fn.endswith(EXTS_ZIP):
+      processZipFile(key, path, containerid=fileid)
+    elif fn.endswith(EXTS_ARCHIVE):
+      processArchive(key, path, containerid=fileid)
+  except:
+    print sys.exc_info()
+    maindb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[0]), fileid])
 
 def walkDirectory(rootDir, startDir):
   # is it a file?
