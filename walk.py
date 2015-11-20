@@ -4,6 +4,7 @@ import sys,os,os.path,datetime,time
 import tarfile,zipfile
 import sqlite3
 import libarchive
+import metadata
 
 # logging
 import logging
@@ -17,8 +18,6 @@ logger.addHandler(ch)
 
 ###
 
-METADIR='.arc'
-
 EXTS_TAR = ('.tar','.tgz','.tbz2','.tar.gz','.tar.bz2')
 EXTS_ZIP = ('.zip')
 EXTS_ISO9660 = ('.iso','.iso9660')
@@ -31,6 +30,10 @@ EXTS_ARCHIVE = (
 EXTS_COMPRESS = ('.gz','.bz2','.z','.lz','.xz','.lzma')
 
 sessionStartTime = long(time.time())
+numScanned = 0
+numAdded = 0
+numModified = 0
+numRemoved = 0
 
 def openDatabase(filepath, create=False):
   db = sqlite3.connect(filepath)
@@ -42,22 +45,22 @@ def openDatabase(filepath, create=False):
     CREATE TABLE IF NOT EXISTS folders (
       id INTEGER NOT NULL PRIMARY KEY,
       path TEXT NOT NULL,
-      fileid INTEGER
+      file_id INTEGER
     )
     ""","""
     CREATE INDEX IF NOT EXISTS folders_idx ON folders(path)
     ""","""
     CREATE TABLE IF NOT EXISTS files (
       id INTEGER NOT NULL PRIMARY KEY,
-      folderid INTEGER NOT NULL,
+      folder_id INTEGER NOT NULL,
       name TEXT NOT NULL,
       size LONG,
-      mtime LONG,
-      lastseen LONG,
+      modtime LONG,
+      lastseentime LONG,
       errors TEXT
     )
     ""","""
-    CREATE UNIQUE INDEX IF NOT EXISTS files_idx ON files(name,folderid)
+    CREATE UNIQUE INDEX IF NOT EXISTS files_idx ON files(name,folder_id)
     """]
     for sql in stmts:
       db.execute(sql)
@@ -78,7 +81,7 @@ def getFolderID(db, folderpath, create=False, fileid=None):
     id = row[0]
   else:
     cur = db.cursor()
-    cur.execute("INSERT INTO folders (path,fileid) VALUES (?,?)", [folderpath, fileid])
+    cur.execute("INSERT INTO folders (path,file_id) VALUES (?,?)", [folderpath, fileid])
     id = cur.lastrowid
   foldercache[folderpath] = id
   return id
@@ -94,12 +97,13 @@ def addFileEntry(path, size, mtime, containerid=None):
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(maindb, folderpath, fileid=containerid)
   cur = maindb.cursor()
-  fileinfo = cur.execute("SELECT id,size,mtime FROM files WHERE folderid=? AND name=? AND size=? AND mtime=?", [folderid, filename, size, mtime]).fetchone()
+  fileinfo = cur.execute("SELECT id,size,modtime FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=?", [folderid, filename, size, mtime]).fetchone()
   if fileinfo:
+    cur.execute("UPDATE files SET lastseentime=? WHERE folder_id=? AND name=?", [sessionStartTime, folderid, filename])
     return fileinfo
   else:
     print (folderid, folderpath, filename, size, mtime)
-    cur.execute("INSERT OR REPLACE INTO files (folderid,name,size,mtime,lastseen,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
+    cur.execute("INSERT OR REPLACE INTO files (folder_id,name,size,modtime,lastseentime,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
     return long(cur.lastrowid)
 
 def fixTimestamp(ts):
@@ -156,6 +160,9 @@ def processFile(rootDir, containerKey, filename):
       maindb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[0]), fileid])
 
 def walkDirectory(rootDir, startDir):
+  print "Scanning %s (starting at %s)" % (rootDir, startDir)
+  numScanned = 0
+  totalBytes = 0
   # is it a file?
   if os.path.isfile(startDir):
     key = startDir[len(rootDir)+1:] # TODO
@@ -166,27 +173,18 @@ def walkDirectory(rootDir, startDir):
     containerKey = dirName[len(rootDir)+1:] # TODO: slashes matter
     for filePath in fileList:
       processFile(rootDir, containerKey, filePath)
+      numScanned += 1
       maindb.commit()
-
-def findRootDir(path):
-  if len(path)<2:
-    return None
-
-  if os.path.isdir(path):
-    metaDir = os.path.join(path, METADIR)
-    if os.path.isdir(metaDir):
-      return os.path.dirname(metaDir)
-
-  return findRootDir(os.path.dirname(path))
+  print "Done. %d files scanned." % (numScanned)
 
 ###
 
-rootDir = findRootDir(sys.argv[1])
+rootDir = metadata.findRootDir(sys.argv[1])
 if not rootDir:
-  print "No %s directory found!" % (METADIR)
-  sys.exit(1)
+  print "No %s directory found!" % (archive.METADIR)
+  sys.exit(1) # TODO?
 
-metaDir = os.path.join(rootDir, METADIR)
+metaDir = metadata.getMetaDir(rootDir)
 
 maindb = openDatabase(os.path.join(metaDir, 'files.db'), create=True)
 
