@@ -4,7 +4,7 @@ import getopt,sys,importlib
 
 verbose = 0
 
-COMMANDS = ['init','scan']
+COMMANDS = ['init','scan','status']
 
 commandsToRun = []
 arguments = []
