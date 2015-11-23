@@ -6,9 +6,16 @@ import os.path,json,datetime,time,sqlite3
 sessionStartTime = long(time.time())
 
 METADIR='.cupaloy'
+GLOBALDBFILE='scans.db'
 
 def getHomeMetaDir():
-  return os.path.join(environ['HOME'], METADIR)
+  return os.path.join(os.environ['HOME'], METADIR)
+  
+def getGlobalDatabasePath():
+  dir = getHomeMetaDir()
+  if not os.path.exists(dir):
+    os.mkdir(dir)
+  return os.path.join(dir, GLOBALDBFILE)
 
 ###
 
@@ -61,6 +68,68 @@ def loadCollection(dir):
   with open(cfgfn,'r') as inf:
     obj = json.load(inf)
     return Collection(obj['uuid'], obj['name'])
+
+def openGlobalDatabase(filepath, create=False):
+  db = sqlite3.connect(filepath)
+  if create:
+    stmts = ["""
+    CREATE TABLE IF NOT EXISTS scans (
+      uuid TEXT,
+      name TEXT,
+      url TEXT,
+      start_time LONG,
+      end_time LONG,
+      num_files LONG,
+      num_added LONG,
+      num_removed LONG,
+      num_modified LONG,
+      min_mtime LONG,
+      max_mtime LONG,
+      total_size LONG,
+      hash_metadata TEXT
+    )
+    """]
+    for sql in stmts:
+      db.execute(sql)
+  return db
+
+class ScanResults:
+  def __init__(self, collection, url):
+    self.collection = collection
+    self.url = url
+    self.start_time = sessionStartTime
+    self.end_time = None
+    self.num_files = None
+    self.num_added = None
+    self.num_removed = None
+    self.num_modified = None
+    self.min_mtime = None
+    self.max_mtime = None
+    self.total_size = None
+    self.hash_metadata = None
+  
+  def updateFromFilesTable(self, db):
+    row = db.execute("""
+    SELECT COUNT(*),MIN(modtime),MAX(modtime),SUM(size)
+    FROM files f
+    JOIN folders p ON f.id=p.id AND file_id IS NULL
+    """).fetchone()
+    self.num_files = long(row[0])
+    self.min_mtime = long(row[1])
+    self.max_mtime = long(row[2])
+    self.total_size = long(row[3])
+  
+  def addToScansTable(self, db):
+    values = [
+      self.collection.uuid, self.collection.name, self.url,
+      self.start_time, self.end_time,
+      self.num_files, self.num_added, self.num_removed, self.num_modified,
+      self.min_mtime, self.max_mtime,
+      self.total_size,
+      self.hash_metadata
+    ]
+    db.execute("INSERT INTO scans VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?)", values)
+    db.commit()
 
 ###
 

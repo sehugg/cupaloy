@@ -115,7 +115,12 @@ def run(args, keywords):
     collection = loadCollection(metaDir)
     print "Found collection %s." % (str(collection))
     maindb = openFileDatabase(os.path.join(metaDir, 'files.db'), create=True)
+    globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
+    url = u"file://%s" % (os.path.abspath(rootDir))
+    scanres = ScanResults(collection, url)
     walkDirectory(rootDir, arg)
+    scanres.updateFromFilesTable(maindb)
+    scanres.addToScansTable(globaldb)
     maindb.close()
     return True
 
