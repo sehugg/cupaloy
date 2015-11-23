@@ -179,13 +179,18 @@ def walkDirectory(rootDir, startDir):
 
 ###
 
-rootDir = metadata.findRootDir(sys.argv[1])
-if not rootDir:
-  print "No %s directory found!" % (archive.METADIR)
-  sys.exit(1) # TODO?
+def run(args):
+  global maindb
+  for arg in args:
+    rootDir = metadata.findRootDir(arg)
+    if not rootDir:
+      print "No %s directory found!" % (metadata.METADIR)
+      return False
 
-metaDir = metadata.getMetaDir(rootDir)
+    metaDir = metadata.getMetaDir(rootDir)
 
-maindb = openDatabase(os.path.join(metaDir, 'files.db'), create=True)
+    maindb = openDatabase(os.path.join(metaDir, 'files.db'), create=True)
 
-walkDirectory(rootDir, sys.argv[1])
+    walkDirectory(rootDir, arg)
+    return True
+

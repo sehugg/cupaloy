@@ -10,13 +10,22 @@ cupaloy status
 1 (PuzzlingPlans) is online, not replicated.
 1 (AncientStuff) is offline, last seen 30 days ago.
 
+
 NAME		Replicas	Where?		Coverage	Last check
 ---
 Huggs Archive	2		local/remote	100%		2 days ago
 
 
+NODES
+
+
+
+
+FILES
+
 $ARCHIVE/.arc/files.db
-~/.arc/$VOLUME/$PATH/files.db
+~/.arc/$NODE/$UUID.db
+~/.arc/collections.db
 
 
 VOLUMES
@@ -51,3 +60,4 @@ challenge/response
 - quickly find relevant collections
 - quickly find relevant files
 - quickly check checksums
+- quickly find differences
