@@ -19,13 +19,11 @@ Huggs Archive	2		local/remote	100%		2 days ago
 NODES
 
 
-
-
 FILES
 
-$ARCHIVE/.arc/files.db
-~/.arc/$NODE/$UUID.db
-~/.arc/collections.db
+$ARCHIVE/.cupaloy/collection.json
+~/.cupaloy/$NODE/$UUID.db
+~/.cupaloy/collections.db
 
 
 VOLUMES

@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-import sys,os,os.path,datetime,time
+import sys,os,os.path,time
 import tarfile,zipfile
 import sqlite3
 import libarchive
-import metadata
+from common import *
 
 # logging
 import logging
@@ -29,108 +29,32 @@ EXTS_ARCHIVE = (
 )
 EXTS_COMPRESS = ('.gz','.bz2','.z','.lz','.xz','.lzma')
 
-sessionStartTime = long(time.time())
 numScanned = 0
 numAdded = 0
 numModified = 0
 numRemoved = 0
 
-def openDatabase(filepath, create=False):
-  db = sqlite3.connect(filepath)
-  db.execute('PRAGMA journal_mode = MEMORY')
-  db.execute('PRAGMA synchronous = OFF')
-  db.execute('PRAGMA page_size = 4096')
-  if create:
-    stmts = ["""
-    CREATE TABLE IF NOT EXISTS folders (
-      id INTEGER NOT NULL PRIMARY KEY,
-      path TEXT NOT NULL,
-      file_id INTEGER
-    )
-    ""","""
-    CREATE INDEX IF NOT EXISTS folders_idx ON folders(path)
-    ""","""
-    CREATE TABLE IF NOT EXISTS files (
-      id INTEGER NOT NULL PRIMARY KEY,
-      folder_id INTEGER NOT NULL,
-      name TEXT NOT NULL,
-      size LONG,
-      modtime LONG,
-      lastseentime LONG,
-      errors TEXT
-    )
-    ""","""
-    CREATE UNIQUE INDEX IF NOT EXISTS files_idx ON files(name,folder_id)
-    """]
-    for sql in stmts:
-      db.execute(sql)
-  return db
-
 maindb = None
-foldercache = {}
 
 def joinPaths(a, b):
   return (a + '/' + b).replace('//','/')
-
-def getFolderID(db, folderpath, create=False, fileid=None):
-  id = foldercache.get(folderpath)
-  if id:
-    return id
-  row = db.execute("SELECT id FROM folders WHERE path=?", [folderpath]).fetchone()
-  if row:
-    id = row[0]
-  else:
-    cur = db.cursor()
-    cur.execute("INSERT INTO folders (path,file_id) VALUES (?,?)", [folderpath, fileid])
-    id = cur.lastrowid
-  foldercache[folderpath] = id
-  return id
-
-def addFileEntry(path, size, mtime, containerid=None):
-  if type(path) != type(u''):
-    try:
-      path = path.decode('UTF-8')
-    except UnicodeEncodeError:
-      print sys.exc_info()
-      path = path.decode('cp1252') #TODO?
-  folderpath,filename = os.path.split(path)
-  mtime = fixTimestamp(mtime)
-  folderid = getFolderID(maindb, folderpath, fileid=containerid)
-  cur = maindb.cursor()
-  fileinfo = cur.execute("SELECT id,size,modtime FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=?", [folderid, filename, size, mtime]).fetchone()
-  if fileinfo:
-    cur.execute("UPDATE files SET lastseentime=? WHERE folder_id=? AND name=?", [sessionStartTime, folderid, filename])
-    return fileinfo
-  else:
-    print (folderid, folderpath, filename, size, mtime)
-    cur.execute("INSERT OR REPLACE INTO files (folder_id,name,size,modtime,lastseentime,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
-    return long(cur.lastrowid)
-
-def fixTimestamp(ts):
-  if type(ts) == type((0,)):
-    dt = apply(datetime.datetime, ts)
-    return long(time.mktime(dt.timetuple()))
-  elif ts == None:
-    return None
-  else:
-    return long(ts)
 
 def processTarFile(containerKey, path, containerid=None):
   with tarfile.open(path, 'r') as tarf:
     for info in tarf:
       if info.isfile():
-        addFileEntry( joinPaths(containerKey, info.name), info.size, info.mtime, containerid=containerid )
+        addFileEntry(maindb, joinPaths(containerKey, info.name), info.size, info.mtime, containerid=containerid )
 
 def processZipFile(containerKey, path, containerid=None):
   with zipfile.ZipFile(path, 'r') as zipf:
     for info in zipf.infolist():
-      addFileEntry( joinPaths(containerKey, info.filename), info.file_size, info.date_time, containerid=containerid )
+      addFileEntry(maindb, joinPaths(containerKey, info.filename), info.file_size, info.date_time, containerid=containerid )
 
 def processArchive(containerKey, path, containerid=None):
   with libarchive.file_reader(path) as archive:
     for entry in archive:
       if entry.isfile:
-        addFileEntry( joinPaths(containerKey, entry.path), entry.size, entry.mtime, containerid=containerid )
+        addFileEntry(maindb, joinPaths(containerKey, entry.path), entry.size, entry.mtime, containerid=containerid )
 
 def processFile(rootDir, containerKey, filename):
   #print rootDir, containerKey, filename
@@ -142,7 +66,7 @@ def processFile(rootDir, containerKey, filename):
   mtime = min(stat.st_atime, stat.st_mtime, stat.st_ctime)
   size = stat.st_size
   #first,second = os.path.split(key)
-  fileid = addFileEntry(key, size, mtime)
+  fileid = addFileEntry(maindb, key, size, mtime)
   if type(fileid) == type(0L):
     try:
       fn = filename
@@ -179,18 +103,19 @@ def walkDirectory(rootDir, startDir):
 
 ###
 
-def run(args):
+def run(args, keywords):
   global maindb
   for arg in args:
-    rootDir = metadata.findRootDir(arg)
+    rootDir = findRootDir(arg)
     if not rootDir:
-      print "No %s directory found!" % (metadata.METADIR)
+      print "No %s directory found. (Maybe need to init a collection here?)" % (METADIR)
       return False
 
-    metaDir = metadata.getMetaDir(rootDir)
-
-    maindb = openDatabase(os.path.join(metaDir, 'files.db'), create=True)
-
+    metaDir = getMetaDir(rootDir)
+    collection = loadCollection(metaDir)
+    print "Found collection %s." % (str(collection))
+    maindb = openFileDatabase(os.path.join(metaDir, 'files.db'), create=True)
     walkDirectory(rootDir, arg)
+    maindb.close()
     return True
 
