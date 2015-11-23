@@ -79,13 +79,12 @@ def openGlobalDatabase(filepath, create=False):
       url TEXT,
       start_time LONG,
       end_time LONG,
-      num_files LONG,
-      num_added LONG,
-      num_removed LONG,
+      num_real_files LONG,
+      num_virtual_files LONG,
       num_modified LONG,
       min_mtime LONG,
       max_mtime LONG,
-      total_size LONG,
+      total_real_size LONG,
       hash_metadata TEXT
     )
     """]
@@ -99,36 +98,38 @@ class ScanResults:
     self.url = url
     self.start_time = sessionStartTime
     self.end_time = None
-    self.num_files = None
-    self.num_added = None
-    self.num_removed = None
+    self.num_real_files = None
+    self.num_virtual_files = None
     self.num_modified = None
     self.min_mtime = None
     self.max_mtime = None
-    self.total_size = None
+    self.total_real_size = None
     self.hash_metadata = None
   
   def updateFromFilesTable(self, db):
+    self.end_time = long(time.time())
     row = db.execute("""
-    SELECT COUNT(*),MIN(modtime),MAX(modtime),SUM(size)
+    SELECT COUNT(file_id),COUNT(*),MIN(modtime),MAX(modtime),
+      SUM(CASE WHEN file_id IS NULL THEN size ELSE 0 END)
     FROM files f
-    JOIN folders p ON f.id=p.id AND file_id IS NULL
-    """).fetchone()
-    self.num_files = long(row[0])
-    self.min_mtime = long(row[1])
-    self.max_mtime = long(row[2])
-    self.total_size = long(row[3])
+    LEFT OUTER JOIN folders p ON f.folder_id=p.id
+    """, []).fetchone()
+    self.num_virtual_files = long(row[0])
+    self.num_real_files = long(row[1]) - self.num_virtual_files
+    self.min_mtime = long(row[2])
+    self.max_mtime = long(row[3])
+    self.total_real_size = long(row[4])
   
   def addToScansTable(self, db):
     values = [
       self.collection.uuid, self.collection.name, self.url,
       self.start_time, self.end_time,
-      self.num_files, self.num_added, self.num_removed, self.num_modified,
+      self.num_real_files, self.num_virtual_files, self.num_modified,
       self.min_mtime, self.max_mtime,
-      self.total_size,
+      self.total_real_size,
       self.hash_metadata
     ]
-    db.execute("INSERT INTO scans VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?)", values)
+    db.execute("INSERT INTO scans VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?)", values)
     db.commit()
 
 ###

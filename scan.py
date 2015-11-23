@@ -119,6 +119,7 @@ def run(args, keywords):
     url = u"file://%s" % (os.path.abspath(rootDir))
     scanres = ScanResults(collection, url)
     walkDirectory(rootDir, arg)
+    # TODO: deleted files?
     scanres.updateFromFilesTable(maindb)
     scanres.addToScansTable(globaldb)
     maindb.close()
