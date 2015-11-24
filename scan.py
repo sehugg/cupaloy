@@ -32,9 +32,6 @@ EXTS_COMPRESS = ('.gz','.bz2','.z','.lz','.xz','.lzma')
 
 filesdb = None
 
-def joinPaths(a, b):
-  return (a + '/' + b).replace('//','/')
-
 def processTarFile(arcfile, containerid=None):
   with arcfile.getFileHandle() as f:
     with tarfile.open(f, 'r') as tarf:

@@ -2,6 +2,8 @@
 
 import os.path,json,datetime,time,sqlite3,locale,urllib
 import platform,socket
+import uuid,urlparse
+from mount import *
 
 # set UTF-8 locale
 # TODO: non-english
@@ -21,6 +23,9 @@ def cleanFilename(fn):
   'file%3A%2F%2F%2Fusers%2Ffoo%2Fbar%2Fmega_mega-mega'
   """
   return urllib.quote(fn, safe='')
+
+def joinPaths(a, b):
+  return (a + '/' + b).replace('//','/')
 
 def getHomeMetaDir():
   homedir = os.environ.get('CUPALOY_HOME') or os.environ['HOME']
@@ -98,15 +103,40 @@ Load a collection definition from a metadata directory.
 """
 def loadCollectionLocation(dir):
   cfgfn = os.path.join(dir, METADIR, Collection.METAFILENAME)
-  with open(cfgfn,'r') as inf:
-    obj = json.load(inf)
-    return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir))
+  if os.path.exists(cfgfn):
+    with open(cfgfn,'r') as inf:
+      obj = json.load(inf)
+      return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir))
+  else:
+    raise Exception("Could not find collection at %s" % dir)
+    # TODO: no config file? override name? warning?
+    url = getFileURL(dir)
+    uid = uuid.uuid3(uuid.NAMESPACE_URL, url)
+    name = urlparse.urlparse(url).netloc
+    return CollectionLocation(Collection(uid, name), url)
 
 """
 Returns a file URL of the form "file://nodename/path"
 """
 def getFileURL(path):
-  return 'file://%s%s' % (getNodeName(), os.path.abspath(path))
+  """
+  >>> getFileURL("/tmp")
+  'file://a06997a7-9a7a-4395-9aa2-8630f3eb13b2/tmp'
+  >>> getFileURL("/")
+  'file://a06997a7-9a7a-4395-9aa2-8630f3eb13b2/'
+  >>> getFileURL("/boot/efi")
+  'file://CB77-C81C/'
+  >>> getFileURL("/boot/efi/foo")
+  'file://CB77-C81C/foo'
+  """
+  assert(len(path)>0)
+  vol_uuid,vol_mount = mountInfoForPath(path)
+  abspath = os.path.abspath(path)
+  if abspath[0:len(vol_mount)] == vol_mount:
+    return 'file://%s' % joinPaths(vol_uuid, abspath[len(vol_mount):])
+  else:
+    # TODO? node name?
+    return 'file:///%s' % (abspath)
 
 """
 Find matching collections from a directory path, URL or (partial) name.

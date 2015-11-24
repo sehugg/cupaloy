@@ -26,8 +26,13 @@ except getopt.GetoptError:
   print sys.exc_info()[1]
 
 if len(commandsToRun) == 0:
-  print 'main.py --name <name> init [directory]'
-  print 'main.py [-v] scan [directories...]'
+  print """
+main.py
+  --name <name> init [directory]
+  scan [collection...]
+  list [collection...]
+  status
+"""
   sys.exit(2)
 
 for cmd in commandsToRun:
