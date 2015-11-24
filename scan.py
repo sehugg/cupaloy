@@ -34,7 +34,7 @@ numAdded = 0
 numModified = 0
 numRemoved = 0
 
-maindb = None
+filesdb = None
 
 def joinPaths(a, b):
   return (a + '/' + b).replace('//','/')
@@ -43,30 +43,26 @@ def processTarFile(containerKey, path, containerid=None):
   with tarfile.open(path, 'r') as tarf:
     for info in tarf:
       if info.isfile():
-        addFileEntry(maindb, joinPaths(containerKey, info.name), info.size, info.mtime, containerid=containerid )
+        addFileEntry(filesdb, joinPaths(containerKey, info.name), info.size, info.mtime, containerid=containerid )
 
 def processZipFile(containerKey, path, containerid=None):
   with zipfile.ZipFile(path, 'r') as zipf:
     for info in zipf.infolist():
-      addFileEntry(maindb, joinPaths(containerKey, info.filename), info.file_size, info.date_time, containerid=containerid )
+      addFileEntry(filesdb, joinPaths(containerKey, info.filename), info.file_size, info.date_time, containerid=containerid )
 
 def processArchive(containerKey, path, containerid=None):
   with libarchive.file_reader(path) as archive:
     for entry in archive:
       if entry.isfile:
-        addFileEntry(maindb, joinPaths(containerKey, entry.path), entry.size, entry.mtime, containerid=containerid )
+        addFileEntry(filesdb, joinPaths(containerKey, entry.path), entry.size, entry.mtime, containerid=containerid )
 
 def processFile(rootDir, containerKey, filename):
-  #print rootDir, containerKey, filename
-  #key = u'%s/%s' % (containerKey, filename)
-  #path = u'%s/%s' % (rootDir, key)
   key = os.path.join(containerKey, filename)
   path = os.path.join(rootDir, containerKey, filename)
   stat = os.stat(path)
   mtime = min(stat.st_atime, stat.st_mtime, stat.st_ctime)
   size = stat.st_size
-  #first,second = os.path.split(key)
-  fileid = addFileEntry(maindb, key, size, mtime)
+  fileid = addFileEntry(filesdb, key, size, mtime)
   if type(fileid) == type(0L):
     try:
       fn = filename
@@ -77,11 +73,11 @@ def processFile(rootDir, containerKey, filename):
       elif fn.endswith(EXTS_ARCHIVE):
         processArchive(key, path, containerid=fileid)
     except KeyboardInterrupt:
-      maindb.rollback()
+      filesdb.rollback()
       raise
     except:
       print 'ERROR',sys.exc_info()
-      maindb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[0]), fileid])
+      filesdb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[0]), fileid])
 
 def walkDirectory(rootDir, startDir):
   print "Scanning %s (starting at %s)" % (rootDir, startDir)
@@ -93,18 +89,20 @@ def walkDirectory(rootDir, startDir):
     containerKey, filePath = os.path.split(key)
     return processFile(rootDir, containerKey, filePath)
   # walk the directory tree
-  for dirName, subdirList, fileList in os.walk(startDir, topdown=False):
+  for dirName, subdirList, fileList in os.walk(startDir, topdown=True):
+    if METADIR in subdirList:
+      subdirList.remove(METADIR) # TODO
     containerKey = dirName[len(rootDir)+1:] # TODO: slashes matter
     for filePath in fileList:
       processFile(rootDir, containerKey, filePath)
       numScanned += 1
-      maindb.commit()
+      filesdb.commit()
   print "Done. %d files scanned." % (numScanned)
 
 ###
 
 def run(args, keywords):
-  global maindb
+  global filesdb
   for arg in args:
     rootDir = findRootDir(arg)
     if not rootDir:
@@ -114,14 +112,15 @@ def run(args, keywords):
     metaDir = getMetaDir(rootDir)
     collection = loadCollection(metaDir)
     print "Found collection %s." % (str(collection))
-    maindb = openFileDatabase(os.path.join(metaDir, 'files.db'), create=True)
+    filesdb = openFileDatabase(os.path.join(metaDir, 'files.db'), create=True)
     globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
     url = u"file://%s" % (os.path.abspath(rootDir))
     scanres = ScanResults(collection, url)
-    walkDirectory(rootDir, arg)
-    # TODO: deleted files?
-    scanres.updateFromFilesTable(maindb)
+    walkDirectory(rootDir, rootDir) # TODO: arg?
+    scanres.deleteFilesNotSeenSince(filesdb, sessionStartTime)
+    scanres.deleteOrphanedFiles(filesdb)
+    scanres.updateFromFilesTable(filesdb)
     scanres.addToScansTable(globaldb)
-    maindb.close()
+    filesdb.close()
     return True
 

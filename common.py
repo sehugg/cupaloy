@@ -6,7 +6,7 @@ import os.path,json,datetime,time,sqlite3
 sessionStartTime = long(time.time())
 
 METADIR='.cupaloy'
-GLOBALDBFILE='scans.db'
+GLOBALDBFILE='global.db'
 
 def getHomeMetaDir():
   return os.path.join(os.environ['HOME'], METADIR)
@@ -82,6 +82,8 @@ def openGlobalDatabase(filepath, create=False):
       num_real_files LONG,
       num_virtual_files LONG,
       num_modified LONG,
+      num_added LONG,
+      num_deleted LONG,
       min_mtime LONG,
       max_mtime LONG,
       total_real_size LONG,
@@ -101,6 +103,8 @@ class ScanResults:
     self.num_real_files = None
     self.num_virtual_files = None
     self.num_modified = None
+    self.num_deleted = None
+    self.num_added = None
     self.min_mtime = None
     self.max_mtime = None
     self.total_real_size = None
@@ -124,13 +128,42 @@ class ScanResults:
     values = [
       self.collection.uuid, self.collection.name, self.url,
       self.start_time, self.end_time,
-      self.num_real_files, self.num_virtual_files, self.num_modified,
+      self.num_real_files, self.num_virtual_files,
+      self.num_modified, self.num_added, self.num_deleted,
       self.min_mtime, self.max_mtime,
       self.total_real_size,
       self.hash_metadata
     ]
-    db.execute("INSERT INTO scans VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?)", values)
+    db.execute("INSERT INTO scans VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)", values)
     db.commit()
+
+  def deleteFilesNotSeenSince(self, db, t):
+    cur = db.cursor()
+    cur.execute("""
+    DELETE FROM files WHERE id IN (
+      SELECT f.id FROM files f
+      JOIN folders p ON p.id=f.folder_id
+      WHERE p.file_id IS NULL
+      AND lastseentime < ?
+    )""", [t])
+    db.commit()
+    self.num_deleted = cur.rowcount
+    cur.close()
+    return cur.rowcount
+    
+  def deleteOrphanedFiles(self, db):
+    cur = db.cursor()
+    cur.execute("""
+    DELETE FROM files WHERE id IN (
+      SELECT f.id FROM files f
+      JOIN folders p ON p.id=f.folder_id
+      WHERE p.file_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT * FROM files f2 WHERE f2.id=p.file_id)
+    )""")
+    db.commit()
+    cur.close()
+    return cur.rowcount
 
 ###
 
@@ -148,6 +181,8 @@ def openFileDatabase(filepath, create=False):
     )
     ""","""
     CREATE INDEX IF NOT EXISTS folders_idx ON folders(path)
+    ""","""
+    CREATE INDEX IF NOT EXISTS folders_idx_2 ON folders(file_id)
     ""","""
     CREATE TABLE IF NOT EXISTS files (
       id INTEGER NOT NULL PRIMARY KEY,
@@ -207,7 +242,7 @@ def addFileEntry(db, path, size, mtime, containerid=None):
   cur = db.cursor()
   fileinfo = cur.execute("SELECT id,size,modtime FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=?", [folderid, filename, size, mtime]).fetchone()
   if fileinfo:
-    cur.execute("UPDATE files SET lastseentime=? WHERE folder_id=? AND name=?", [sessionStartTime, folderid, filename])
+    cur.execute("UPDATE files SET lastseentime=? WHERE id=?", [sessionStartTime, fileinfo[0]])
     return fileinfo
   else:
     print (folderid, folderpath, filename, size, mtime)

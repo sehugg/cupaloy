@@ -8,9 +8,10 @@ def run(args, keywords):
   globaldb = openGlobalDatabase(getGlobalDatabasePath())
   globaldb.row_factory = sqlite3.Row
   results = globaldb.execute("""
-  SELECT name,
+  SELECT 
+    name,
     datetime(MAX(start_time),'unixepoch'),
-    total_real_size/1024.0/1024.0,
+    ROUND(total_real_size/1024.0/1024.0,1),
     num_real_files,
     datetime(min_mtime,'unixepoch'),
     datetime(max_mtime,'unixepoch')
