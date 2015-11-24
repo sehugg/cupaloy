@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os.path,json,datetime,time,sqlite3,locale
+import os.path,json,datetime,time,sqlite3,locale,urllib
 import platform,socket
 
 # set UTF-8 locale
@@ -13,9 +13,19 @@ sessionStartTime = long(time.time())
 METADIR='.cupaloy'
 GLOBALDBFILE='global.db'
 
+def cleanFilename(fn):
+  """
+  >>> cleanFilename('/foo/bar')
+  '%2Ffoo%2Fbar'
+  >>> cleanFilename('file:///users/foo/bar/mega_mega-mega')
+  'file%3A%2F%2F%2Fusers%2Ffoo%2Fbar%2Fmega_mega-mega'
+  """
+  return urllib.quote(fn, safe='')
+
 def getHomeMetaDir():
-  return os.path.join(os.environ['HOME'], METADIR)
-  
+  homedir = os.environ.get('CUPALOY_HOME') or os.environ['HOME']
+  return os.path.join(homedir, METADIR)
+
 def getGlobalDatabasePath():
   dir = getHomeMetaDir()
   if not os.path.exists(dir):
@@ -43,9 +53,18 @@ class Collection:
 
   METAFILENAME='config.json'
   
-  def __init__(self, uuid, name):
+  def __init__(self, uuid, name, url):
     self.uuid = str(uuid)
     self.name = name
+    self.url = url
+    
+  """
+  Find the corresponding file database for this collection.
+  """
+  def getFileDatabasePath(self):
+    assert self.url
+    fn = '%s.db' % (cleanFilename(self.url))
+    return os.path.join(getHomeMetaDir(), 'collections', self.uuid, fn)
     
   """
   Save the collection's identifying metadata to a metadata directory.
@@ -63,18 +82,61 @@ class Collection:
       raise Exception("Could not write '%s': file exists" % (cfgfn))
       
   def __repr__(self):
-    return "%s (%s)" % (self.name, self.uuid)
+    return "%s (%s) @ %s" % (self.name, self.uuid, self.url)
 
 """
 Load a collection definition from a metadata directory.
 """
 def loadCollection(dir):
-  cfgfn = os.path.join(dir, Collection.METAFILENAME)
+  cfgfn = os.path.join(dir, METADIR, Collection.METAFILENAME)
   with open(cfgfn,'r') as inf:
     obj = json.load(inf)
-    return Collection(obj['uuid'], obj['name'])
+    return Collection(obj['uuid'], obj['name'], getFileURL(dir))
+
+"""
+Returns a file URL of the form "file://nodename/path"
+"""
+def getFileURL(path):
+  return 'file://%s%s' % (getNodeName(), os.path.abspath(path))
+
+"""
+Find matching collections from a directory path, URL or (partial) name.
+"""
+def parseCollections(globaldb, arg):
+  # if it's a directory, return it
+  if os.path.isdir(arg):
+    return [ loadCollection(arg) ]
+  # match the string against recently scanned collections
+  rows = globaldb.execute("""
+  SELECT DISTINCT uuid,name,url FROM scans
+  WHERE uuid LIKE ?||'%' OR name LIKE ?||'%' OR url LIKE ?||'%'
+  ORDER BY start_time DESC
+  """, [arg, arg, arg])
+  return [Collection(x,y,z) for x,y,z in rows]
+
+"""
+Find a single collection from a directory path, URL or (partial) name.
+"""
+def parseCollection(globaldb, arg, disambiguate=True):
+  results = parseCollections(globaldb, arg)
+  if len(results) == 0:
+    raise Exception( "Could not find collection for '%s'." % (arg) )
+  elif len(results) > 1 and not disambiguate:
+    raise Exception( "Multiple matching collections for '%s'." % (arg) )
+  else:
+    return results[0]
+
+def makeDirsFor(path):
+  dir = os.path.dirname(path)
+  if not os.path.exists(dir):
+    try:
+      os.makedirs(dir)
+    except:
+      pass
 
 def openGlobalDatabase(filepath, create=False):
+  if create:
+    makeDirsFor(filepath)
   db = sqlite3.connect(filepath)
   if create:
     stmts = ["""
@@ -188,6 +250,8 @@ class ScanResults:
 ###
 
 def openFileDatabase(filepath, create=False):
+  if create:
+    makeDirsFor(filepath)
   db = sqlite3.connect(filepath)
   db.execute('PRAGMA journal_mode = MEMORY')
   db.execute('PRAGMA synchronous = OFF')
@@ -279,8 +343,7 @@ def addFileEntry(db, scanfile, containerid=None):
 class ScanFile:
 
   def __init__(self, key, size, mtime):
-    assert type(key) == type(u'')
-    self.key = key
+    self.key = unicode(key)
     self.size = long(size)
     mtime = fixTimestamp(mtime)
     # filter out too soon or future times

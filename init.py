@@ -15,6 +15,6 @@ def run(args, keywords):
   path = args[0]
   metadir = getMetaDir(path)
   uid = uuid.uuid4()
-  coll = Collection(uid, name)
+  coll = Collection(uid, name, getFileURL(path))
   coll.write(metadir)
   print "Collection '%s' created (UUID %s)." % (name, uid)

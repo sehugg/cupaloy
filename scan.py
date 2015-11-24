@@ -81,20 +81,13 @@ def processScanFile(scanfile):
 
 def run(args, keywords):
   global filesdb
+  globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
   for arg in args:
-    rootDir = findRootDir(arg)
-    if not rootDir:
-      print "No %s directory found. (Maybe need to init a collection here?)" % (METADIR)
-      return False
-
-    metaDir = getMetaDir(rootDir)
-    collection = loadCollection(metaDir)
-    print "Found collection %s." % (str(collection))
-    filesdb = openFileDatabase(os.path.join(metaDir, 'files.db'), create=True)
-    globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
-    url = u"file://%s" % (os.path.abspath(rootDir))
-    scanres = ScanResults(collection, url)
-    scanner = FileScanner(url)
+    collection = parseCollection(globaldb, arg)
+    print "Scanning %s..." % (str(collection))
+    filesdb = openFileDatabase(collection.getFileDatabasePath(), create=True)
+    scanres = ScanResults(collection, collection.url)
+    scanner = FileScanner(collection.url)
     for scanfile in scanner.scan():
       processScanFile(scanfile)
       filesdb.commit()
@@ -105,5 +98,6 @@ def run(args, keywords):
     scanres.addToScansTable(globaldb)
     print "Done."
     filesdb.close()
-    return True
+  globaldb.close()
+  return True
 

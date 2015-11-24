@@ -52,6 +52,11 @@ hashes
 scans
 
 
+SCAN
+
+(scannode,uuid,url,volume?)
+
+
 BROADCAST
 
 challenge/response
