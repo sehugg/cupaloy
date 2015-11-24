@@ -75,7 +75,7 @@ def processScanFile(scanfile):
       raise
     except:
       print 'ERROR',sys.exc_info()
-      filesdb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[0]), fileid])
+      filesdb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[1]), fileid])
 
 ###
 

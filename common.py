@@ -1,7 +1,11 @@
 #!/usr/bin/python
 
-import os.path,json,datetime,time,sqlite3
+import os.path,json,datetime,time,sqlite3,locale
 import platform,socket
+
+# set UTF-8 locale
+# TODO: non-english
+locale.setlocale(locale.LC_ALL, ('en', 'utf-8'))
 
 # TODO?
 sessionStartTime = long(time.time())
@@ -249,11 +253,13 @@ def addFileEntry(db, scanfile, containerid=None):
   path = scanfile.key
   mtime = scanfile.mtime
   size = scanfile.size
+  # TODO: mtime == 0 or mtime > now
+  # TODO: do we really need to convert?
   if type(path) != type(u''):
     try:
       path = path.decode('UTF-8')
     except UnicodeEncodeError:
-      print sys.exc_info()
+      print (path, sys.exc_info())
       path = path.decode('cp1252') #TODO?
   folderpath,filename = os.path.split(path)
   mtime = fixTimestamp(mtime)
@@ -273,9 +279,14 @@ def addFileEntry(db, scanfile, containerid=None):
 class ScanFile:
 
   def __init__(self, key, size, mtime):
+    assert type(key) == type(u'')
     self.key = key
     self.size = long(size)
-    self.mtime = fixTimestamp(mtime)
+    mtime = fixTimestamp(mtime)
+    # filter out too soon or future times
+    if mtime < 2 or mtime > sessionStartTime+(86400*365):
+      mtime = None
+    self.mtime = mtime
 
   def __repr__(self):
     return str((self.key, self.size, self.mtime))

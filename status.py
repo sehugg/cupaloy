@@ -11,7 +11,7 @@ def run(args, keywords):
   SELECT 
     name,
     datetime(MAX(start_time),'unixepoch'),
-    ROUND(total_real_size/1024.0/1024.0,1),
+    ROUND(total_real_size/1000.0/1000.0,1),
     num_real_files,
     datetime(min_mtime,'unixepoch'),
     datetime(max_mtime,'unixepoch')
