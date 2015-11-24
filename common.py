@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os.path,json,datetime,time,sqlite3
+import platform,socket
 
 # TODO?
 sessionStartTime = long(time.time())
@@ -74,6 +75,7 @@ def openGlobalDatabase(filepath, create=False):
   if create:
     stmts = ["""
     CREATE TABLE IF NOT EXISTS scans (
+      scanned_from TEXT,
       uuid TEXT,
       name TEXT,
       url TEXT,
@@ -93,6 +95,19 @@ def openGlobalDatabase(filepath, create=False):
     for sql in stmts:
       db.execute(sql)
   return db
+
+def getNodeName():
+  """
+  >>> type(getNodeName())
+  <type 'str'>
+  """
+  name = platform.node()
+  if not name:
+    name = socket.gethostname()
+    if not name:
+      name = os.environ.get('COMPUTERNAME')
+  assert(name)
+  return name
 
 class ScanResults:
   def __init__(self, collection, url):
@@ -126,6 +141,7 @@ class ScanResults:
   
   def addToScansTable(self, db):
     values = [
+      getNodeName(),
       self.collection.uuid, self.collection.name, self.url,
       self.start_time, self.end_time,
       self.num_real_files, self.num_virtual_files,
@@ -134,7 +150,7 @@ class ScanResults:
       self.total_real_size,
       self.hash_metadata
     ]
-    db.execute("INSERT INTO scans VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)", values)
+    db.execute("INSERT INTO scans VALUES (?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)", values)
     db.commit()
 
   def deleteFilesNotSeenSince(self, db, t):
