@@ -245,7 +245,10 @@ def fixTimestamp(ts):
   else:
     return long(ts)
 
-def addFileEntry(db, path, size, mtime, containerid=None):
+def addFileEntry(db, scanfile, containerid=None):
+  path = scanfile.key
+  mtime = scanfile.mtime
+  size = scanfile.size
   if type(path) != type(u''):
     try:
       path = path.decode('UTF-8')
@@ -256,7 +259,7 @@ def addFileEntry(db, path, size, mtime, containerid=None):
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(db, folderpath, fileid=containerid)
   cur = db.cursor()
-  fileinfo = cur.execute("SELECT id,size,modtime FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=?", [folderid, filename, size, mtime]).fetchone()
+  fileinfo = cur.execute("SELECT id,size,modtime FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND errors IS NULL", [folderid, filename, size, mtime]).fetchone()
   if fileinfo:
     cur.execute("UPDATE files SET lastseentime=? WHERE id=?", [sessionStartTime, fileinfo[0]])
     return fileinfo
@@ -265,6 +268,17 @@ def addFileEntry(db, path, size, mtime, containerid=None):
     cur.execute("INSERT OR REPLACE INTO files (folder_id,name,size,modtime,lastseentime,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
     return long(cur.lastrowid)
 
+###
+
+class ScanFile:
+
+  def __init__(self, key, size, mtime):
+    self.key = key
+    self.size = long(size)
+    self.mtime = fixTimestamp(mtime)
+
+  def __repr__(self):
+    return str((self.key, self.size, self.mtime))
 
 ###
 
