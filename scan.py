@@ -83,11 +83,11 @@ def run(args, keywords):
   global filesdb
   globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
   for arg in args:
-    collection = parseCollection(globaldb, arg)
-    print "Scanning %s..." % (str(collection))
-    filesdb = openFileDatabase(collection.getFileDatabasePath(), create=True)
-    scanres = ScanResults(collection, collection.url)
-    scanner = FileScanner(collection.url)
+    cloc = parseCollection(globaldb, arg)
+    print "Scanning %s" % (str(cloc))
+    filesdb = openFileDatabase(cloc.getFileDatabasePath(), create=True)
+    scanres = ScanResults(cloc)
+    scanner = FileScanner(cloc.url)
     for scanfile in scanner.scan():
       processScanFile(scanfile)
       filesdb.commit()

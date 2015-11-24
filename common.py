@@ -53,18 +53,9 @@ class Collection:
 
   METAFILENAME='config.json'
   
-  def __init__(self, uuid, name, url):
+  def __init__(self, uuid, name):
     self.uuid = str(uuid)
     self.name = name
-    self.url = url
-    
-  """
-  Find the corresponding file database for this collection.
-  """
-  def getFileDatabasePath(self):
-    assert self.url
-    fn = '%s.db' % (cleanFilename(self.url))
-    return os.path.join(getHomeMetaDir(), 'collections', self.uuid, fn)
     
   """
   Save the collection's identifying metadata to a metadata directory.
@@ -82,16 +73,34 @@ class Collection:
       raise Exception("Could not write '%s': file exists" % (cfgfn))
       
   def __repr__(self):
-    return "%s (%s) @ %s" % (self.name, self.uuid, self.url)
+    return "%s (%s)" % (self.name, self.uuid)
+
+class CollectionLocation:
+
+  def __init__(self, collection, url):
+    self.collection = collection
+    self.url = url
+
+  """
+  Find the corresponding file database for this collection.
+  """
+  def getFileDatabasePath(self):
+    assert self.url
+    fn = '%s.db' % (cleanFilename(self.url))
+    return os.path.join(getHomeMetaDir(), 'collections', self.collection.uuid, fn)
+    
+  def __repr__(self):
+    return "%s @ %s" % (self.collection, self.url)
+
 
 """
 Load a collection definition from a metadata directory.
 """
-def loadCollection(dir):
+def loadCollectionLocation(dir):
   cfgfn = os.path.join(dir, METADIR, Collection.METAFILENAME)
   with open(cfgfn,'r') as inf:
     obj = json.load(inf)
-    return Collection(obj['uuid'], obj['name'], getFileURL(dir))
+    return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir))
 
 """
 Returns a file URL of the form "file://nodename/path"
@@ -105,14 +114,15 @@ Find matching collections from a directory path, URL or (partial) name.
 def parseCollections(globaldb, arg):
   # if it's a directory, return it
   if os.path.isdir(arg):
-    return [ loadCollection(arg) ]
+    return [ loadCollectionLocation(arg) ]
   # match the string against recently scanned collections
+  # TODO: match with config file?
   rows = globaldb.execute("""
   SELECT DISTINCT uuid,name,url FROM scans
   WHERE uuid LIKE ?||'%' OR name LIKE ?||'%' OR url LIKE ?||'%'
   ORDER BY start_time DESC
   """, [arg, arg, arg])
-  return [Collection(x,y,z) for x,y,z in rows]
+  return [CollectionLocation(Collection(x,y),z) for x,y,z in rows]
 
 """
 Find a single collection from a directory path, URL or (partial) name.
@@ -176,9 +186,10 @@ def getNodeName():
   return name
 
 class ScanResults:
-  def __init__(self, collection, url):
-    self.collection = collection
-    self.url = url
+  def __init__(self, cloc):
+    assert cloc
+    self.collection = cloc.collection
+    self.url = cloc.url
     self.start_time = sessionStartTime
     self.end_time = None
     self.num_real_files = None
