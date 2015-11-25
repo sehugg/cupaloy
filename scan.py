@@ -4,6 +4,7 @@ import sys,os,os.path,time
 import tarfile,zipfile
 import sqlite3
 import libarchive
+import hashlib
 from common import *
 from scanner_file import *
 
@@ -31,6 +32,50 @@ EXTS_ARCHIVE = (
 EXTS_COMPRESS = ('.gz','.bz2','.z','.lz','.xz','.lzma')
 
 filesdb = None
+
+def computeHash(scanfile, hashfn):
+  with scanfile.getFileHandle() as f:
+    if f:
+      m = hashfn()
+      arr = f.read(0x1000)
+      while arr:
+        m.update(arr)
+        arr = f.read(0x1000)
+      return m.digest()
+
+def updateHash(db, fileid, scanfile):
+  hash_md5 = computeHash(scanfile, hashlib.md5)
+  if hash_md5:
+    db.execute("UPDATE files SET hash_md5=? WHERE id=?", [buffer(hash_md5), fileid])
+
+def addFileEntry(db, scanfile, containerid=None):
+  path = scanfile.key
+  mtime = scanfile.mtime
+  size = scanfile.size
+  # TODO: mtime == 0 or mtime > now
+  # TODO: do we really need to convert?
+  if type(path) != type(u''):
+    try:
+      path = path.decode('UTF-8')
+    except UnicodeEncodeError:
+      print (path, sys.exc_info())
+      path = path.decode('cp1252') #TODO?
+  folderpath,filename = os.path.split(path)
+  mtime = fixTimestamp(mtime)
+  folderid = getFolderID(db, folderpath, fileid=containerid)
+  cur = db.cursor()
+  fileinfo = cur.execute("SELECT id,size,modtime,hash_md5 FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND errors IS NULL", [folderid, filename, size, mtime]).fetchone()
+  if fileinfo:
+    if not fileinfo[3]: #TODO?
+      updateHash(db, fileinfo[0], scanfile)
+    cur.execute("UPDATE files SET lastseentime=? WHERE id=?", [sessionStartTime, fileinfo[0]])
+    return fileinfo
+  else:
+    print (folderid, folderpath, filename, size, mtime)
+    cur.execute("INSERT OR REPLACE INTO files (folder_id,name,size,modtime,lastseentime,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
+    fileid = long(cur.lastrowid)
+    updateHash(db, fileid, scanfile)
+    return fileid
 
 def processTarFile(arcfile, containerid=None):
   with arcfile.getFileHandle() as f:
@@ -73,6 +118,7 @@ def processScanFile(scanfile):
     except:
       print 'ERROR',sys.exc_info()
       filesdb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[1]), fileid])
+
 
 ###
 

@@ -372,8 +372,11 @@ def openFileDatabase(filepath, create=False):
       size LONG,
       modtime LONG,
       lastseentime LONG,
-      errors TEXT
+      errors TEXT,
+      hash_md5 BINARY
     )
+    ""","""
+    --ALTER TABLE files ADD COLUMN hash_md5 BINARY
     ""","""
     CREATE UNIQUE INDEX IF NOT EXISTS files_idx ON files(name,folder_id)
     """]
@@ -409,31 +412,6 @@ def fixTimestamp(ts):
     return None
   else:
     return long(ts)
-
-def addFileEntry(db, scanfile, containerid=None):
-  path = scanfile.key
-  mtime = scanfile.mtime
-  size = scanfile.size
-  # TODO: mtime == 0 or mtime > now
-  # TODO: do we really need to convert?
-  if type(path) != type(u''):
-    try:
-      path = path.decode('UTF-8')
-    except UnicodeEncodeError:
-      print (path, sys.exc_info())
-      path = path.decode('cp1252') #TODO?
-  folderpath,filename = os.path.split(path)
-  mtime = fixTimestamp(mtime)
-  folderid = getFolderID(db, folderpath, fileid=containerid)
-  cur = db.cursor()
-  fileinfo = cur.execute("SELECT id,size,modtime FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND errors IS NULL", [folderid, filename, size, mtime]).fetchone()
-  if fileinfo:
-    cur.execute("UPDATE files SET lastseentime=? WHERE id=?", [sessionStartTime, fileinfo[0]])
-    return fileinfo
-  else:
-    print (folderid, folderpath, filename, size, mtime)
-    cur.execute("INSERT OR REPLACE INTO files (folder_id,name,size,modtime,lastseentime,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
-    return long(cur.lastrowid)
 
 ###
 
