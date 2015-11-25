@@ -173,7 +173,7 @@ def getFileURL(path):
   'file://CB77-C81C/foo'
   """
   assert(len(path)>0)
-  vol_uuid,vol_mount = mountInfoForPath(path)
+  vol_uuid,vol_mount = mountInfo.forPath(path)
   abspath = os.path.abspath(path)
   if abspath[0:len(vol_mount)] == vol_mount:
     return 'file://%s' % joinPaths(vol_uuid, abspath[len(vol_mount):])

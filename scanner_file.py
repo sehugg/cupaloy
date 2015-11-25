@@ -22,7 +22,7 @@ class FileScanner:
     # if file://netloc/, prepend root of mount to path
     # TODO?
     if pr.netloc and len(pr.netloc):
-      self.rootDir = os.path.normpath(os.path.join(mountLocationForUUID(pr.netloc), pr.path[1:]))
+      self.rootDir = os.path.normpath(os.path.join(mountInfo.locationForUUID(pr.netloc), pr.path[1:]))
     else:
       self.rootDir = pr.path
     assert os.path.isdir(self.rootDir)
