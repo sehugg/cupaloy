@@ -50,12 +50,16 @@ def run(args, keywords):
     collidx += 1
   # select
   #mergedb.execute("CREATE INDEX file_idx_name ON files(collidx,name)")
-  results = mergedb.execute("""
-  SELECT collidx,dups,locs,COUNT(*) as nfiles,SUM(size) as totsize FROM (
+  mergedb.execute("""
+  CREATE TABLE dupfiles AS
     SELECT COUNT(*) as dups,collidx,GROUP_CONCAT(locidx) as locs,path,name,size,modtime
     FROM files
-    GROUP BY collidx,path,name,size,modtime
-  ) GROUP BY collidx,dups,locs
+    GROUP BY collidx,path,name,size
+  """)
+  results = mergedb.execute("""
+  SELECT collidx,dups,locs,COUNT(*) as nfiles,SUM(size) as totsize
+  FROM dupfiles
+  GROUP BY collidx,dups,locs
   """).fetchall()
   table = [
     (
@@ -69,4 +73,7 @@ def run(args, keywords):
   ]
   headers = ["Collection","# Copies","Locations","# Files","Total Size"]
   print tabulate.tabulate(table, headers=headers)
-      
+  
+  for row in mergedb.execute("SELECT dups,collidx,locs,path,name,size FROM dupfiles WHERE dups=1 ORDER BY collidx,locs,path,name"):
+    if isIncluded(row[3]) and isIncluded(row[4]):
+      print row

@@ -3,6 +3,7 @@
 import os.path,json,datetime,time,sqlite3,locale,urllib
 import platform,socket
 import uuid,urlparse
+import fnmatch
 from mount import *
 
 # set UTF-8 locale
@@ -14,6 +15,27 @@ sessionStartTime = long(time.time())
 
 METADIR='.cupaloy'
 GLOBALDBFILE='hosts/%s.db'
+
+EXCLUDES=['.cupaloy','*~','.DS_Store']
+
+###
+
+def isIncluded(name):
+  return not isExcluded(name)
+
+def isExcluded(name):
+  """
+  >>> isExcluded("foo/foo~")
+  True
+  >>> isExcluded("foo~")
+  True
+  >>> isExcluded("foo/.cupaloy")
+  False
+  """
+  for ex in EXCLUDES:
+    if fnmatch.fnmatch(name, ex):
+      return True
+  return False
 
 def cleanFilename(fn):
   """

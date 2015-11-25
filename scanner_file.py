@@ -32,11 +32,12 @@ class FileScanner:
     startDir = self.rootDir
     for dirName, subdirList, fileList in os.walk(startDir, topdown=True):
       # ignore meta directories (TODO)
-      if METADIR in subdirList:
-        subdirList.remove(METADIR)
+      subdirList[:] = filter(lambda x: isIncluded(x), subdirList)
       containerKey = dirName[len(self.rootDir)+1:] # TODO: slashes matter
-      for filePath in fileList:
-        yield self.processFile(containerKey, filePath)
+      if isIncluded(containerKey):
+        for filePath in fileList:
+          if isIncluded(filePath):
+            yield self.processFile(containerKey, filePath)
 
   def processFile(self, containerKey, filename):
     key = os.path.join(containerKey, filename)
