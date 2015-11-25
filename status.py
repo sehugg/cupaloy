@@ -5,7 +5,7 @@ import tabulate
 from common import *
 
 def run(args, keywords):
-  globaldb = openGlobalDatabase(getGlobalDatabasePath())
+  globaldb = openGlobalDatabase(getGlobalDatabasePath(host=keywords.get('host')))
   globaldb.row_factory = sqlite3.Row
   results = globaldb.execute("""
   SELECT 

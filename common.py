@@ -13,7 +13,7 @@ locale.setlocale(locale.LC_ALL, ('en', 'utf-8'))
 sessionStartTime = long(time.time())
 
 METADIR='.cupaloy'
-GLOBALDBFILE='global.db'
+GLOBALDBFILE='hosts/%s.db'
 
 def cleanFilename(fn):
   """
@@ -31,11 +31,19 @@ def getHomeMetaDir():
   homedir = os.environ.get('CUPALOY_HOME') or os.environ['HOME']
   return os.path.join(homedir, METADIR)
 
-def getGlobalDatabasePath():
+def getGlobalDatabasePath(host=None):
   dir = getHomeMetaDir()
   if not os.path.exists(dir):
     os.mkdir(dir)
-  return os.path.join(dir, GLOBALDBFILE)
+  if not host:
+    host = getNodeName()
+  return os.path.join(dir, GLOBALDBFILE % cleanFilename(host))
+
+def getAllHostDBFiles():
+  return os.listdir(os.path.join(getHomeMetaDir(), "hosts"))
+
+def getAllCollectionUUIDs():
+  return os.listdir(os.path.join(getHomeMetaDir(), "collections"))
 
 ###
 
@@ -177,6 +185,8 @@ def makeDirsFor(path):
 def openGlobalDatabase(filepath, create=False):
   if create:
     makeDirsFor(filepath)
+  else:
+    assert os.path.exists(filepath)
   db = sqlite3.connect(filepath)
   if create:
     stmts = ["""
@@ -293,6 +303,8 @@ class ScanResults:
 def openFileDatabase(filepath, create=False):
   if create:
     makeDirsFor(filepath)
+  else:
+    assert os.path.exists(filepath)
   db = sqlite3.connect(filepath)
   db.execute('PRAGMA journal_mode = MEMORY')
   db.execute('PRAGMA synchronous = OFF')

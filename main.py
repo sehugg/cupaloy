@@ -4,19 +4,21 @@ import getopt,sys,importlib
 
 verbose = 0
 
-COMMANDS = ['init','scan','status','list']
+COMMANDS = ['init','scan','status','list','diff']
 
 commandsToRun = []
 arguments = []
 keywords = {}
 
 try:
-  opts, args = getopt.getopt(sys.argv[1:],"vn:",["name="])
+  opts, args = getopt.getopt(sys.argv[1:],"vn:h:",["verbose","name=","host="])
   for opt, arg in opts:
-    if opt == '-v':
+    if opt in ('-v','--verbose'):
       verbose += 1
     elif opt in ('-n','--name'):
       keywords['name'] = arg
+    elif opt in ('-h','--host'):
+      keywords['host'] = arg
   for arg in args:
     if arg in COMMANDS:
       commandsToRun.append(arg)
@@ -31,7 +33,8 @@ main.py
   --name <name> init [directory]
   scan [collection...]
   list [collection...]
-  status
+  [--host <name>] status
+  --host <name> diff
 """
   sys.exit(2)
 
