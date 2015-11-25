@@ -11,7 +11,7 @@ arguments = []
 keywords = {}
 
 try:
-  opts, args = getopt.getopt(sys.argv[1:],"vn:h:",["verbose","name=","host="])
+  opts, args = getopt.getopt(sys.argv[1:],"vn:h:f",["verbose","name=","host=","force="])
   for opt, arg in opts:
     if opt in ('-v','--verbose'):
       verbose += 1
@@ -19,6 +19,8 @@ try:
       keywords['name'] = arg
     elif opt in ('-h','--host'):
       keywords['host'] = arg
+    elif opt in ('-f','--force'):
+      keywords['force'] = arg
   for arg in args:
     if arg in COMMANDS:
       commandsToRun.append(arg)

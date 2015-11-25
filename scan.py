@@ -32,8 +32,16 @@ EXTS_ARCHIVE = (
 EXTS_COMPRESS = ('.gz','.bz2','.z','.lz','.xz','.lzma')
 
 filesdb = None
+force = False
+compute_hashes = True
 
 def computeHash(scanfile, hashfn):
+  if not compute_hashes:
+    return None
+  if scanfile.size <= 0:
+    return None
+  if not hasattr(scanfile, 'getFileHandle'):
+    return None
   with scanfile.getFileHandle() as f:
     if f:
       m = hashfn()
@@ -64,7 +72,7 @@ def addFileEntry(db, scanfile, containerid=None):
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(db, folderpath, fileid=containerid)
   cur = db.cursor()
-  fileinfo = cur.execute("SELECT id,size,modtime,hash_md5 FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND errors IS NULL", [folderid, filename, size, mtime]).fetchone()
+  fileinfo = not force and cur.execute("SELECT id,size,modtime,hash_md5 FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND errors IS NULL", [folderid, filename, size, mtime]).fetchone()
   if fileinfo:
     if not fileinfo[3]: #TODO?
       updateHash(db, fileinfo[0], scanfile)
@@ -123,7 +131,10 @@ def processScanFile(scanfile):
 ###
 
 def run(args, keywords):
-  global filesdb
+  global filesdb, force
+  force = 'force' in keywords
+  if force:
+    print "Forced refresh."
   globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
   for arg in args:
     cloc = parseCollection(globaldb, arg)

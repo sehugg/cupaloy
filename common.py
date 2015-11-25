@@ -16,7 +16,7 @@ sessionStartTime = long(time.time())
 METADIR='.cupaloy'
 GLOBALDBFILE='hosts/%s.db'
 
-EXCLUDES=['.cupaloy','*~','.DS_Store']
+EXCLUDES=['.cupaloy','*~','.DS_Store','.~lock.*']
 
 ###
 

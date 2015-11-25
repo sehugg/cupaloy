@@ -24,7 +24,8 @@ def run(args, keywords):
     path TEXT,
     name TEXT,
     size LONG,
-    modtime LONG
+    modtime LONG,
+    hash_md5 BINARY
   )
   """)
   # TODO: locs from more than one host
@@ -40,7 +41,7 @@ def run(args, keywords):
       # add only real files
       mergedb.execute("""
       INSERT INTO files
-      SELECT ?,?,path,name,size,modtime 
+      SELECT ?,?,path,name,size,modtime,hash_md5
         FROM db.files f
         JOIN db.folders p ON p.id=f.folder_id
        WHERE file_id IS NULL
@@ -52,7 +53,7 @@ def run(args, keywords):
   #mergedb.execute("CREATE INDEX file_idx_name ON files(collidx,name)")
   mergedb.execute("""
   CREATE TABLE dupfiles AS
-    SELECT COUNT(*) as dups,collidx,GROUP_CONCAT(locidx) as locs,path,name,size,modtime
+    SELECT COUNT(*) as dups,collidx,GROUP_CONCAT(locidx) as locs,path,name,size,GROUP_CONCAT(modtime),GROUP_CONCAT(hash_md5)
     FROM files
     GROUP BY collidx,path,name,size
   """)
@@ -73,7 +74,8 @@ def run(args, keywords):
   ]
   headers = ["Collection","# Copies","Locations","# Files","Total Size"]
   print tabulate.tabulate(table, headers=headers)
-  
-  for row in mergedb.execute("SELECT dups,collidx,locs,path,name,size FROM dupfiles WHERE dups=1 ORDER BY collidx,locs,path,name"):
-    if isIncluded(row[3]) and isIncluded(row[4]):
-      print row
+
+  if 0:
+    for row in mergedb.execute("SELECT dups,collidx,locs,path,name,size FROM dupfiles WHERE dups=1 ORDER BY collidx,locs,path,name"):
+      if isIncluded(row[3]) and isIncluded(row[4]):
+        print row
