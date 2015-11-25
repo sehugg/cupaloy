@@ -27,6 +27,18 @@ def cleanFilename(fn):
 def joinPaths(a, b):
   return (a + '/' + b).replace('//','/')
 
+suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+def humansize(nbytes):
+    if nbytes == 0: return '0 B'
+    i = 0
+    while nbytes >= 1024 and i < len(suffixes)-1:
+        nbytes /= 1024.
+        i += 1
+    f = ('%.2f' % nbytes).rstrip('0').rstrip('.')
+    return '%s %s' % (f, suffixes[i])
+
+###
+
 def getHomeMetaDir():
   homedir = os.environ.get('CUPALOY_HOME') or os.environ['HOME']
   return os.path.join(homedir, METADIR)
@@ -44,6 +56,7 @@ def getAllHostDBFiles():
 
 def getAllCollectionUUIDs():
   return os.listdir(os.path.join(getHomeMetaDir(), "collections"))
+
 
 ###
 
@@ -145,6 +158,15 @@ def getFileURL(path):
   else:
     # TODO? node name?
     return 'file:///%s' % (abspath)
+
+def getAllCollectionLocations(globaldb):
+  # select most recent scan
+  rows = globaldb.execute("""
+  SELECT DISTINCT uuid,name,url,MAX(start_time)
+  FROM scans
+  GROUP BY uuid,url
+  """)
+  return [CollectionLocation(Collection(x,y),z) for x,y,z,t in rows]  
 
 """
 Find matching collections from a directory path, URL or (partial) name.

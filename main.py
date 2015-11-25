@@ -32,9 +32,7 @@ if len(commandsToRun) == 0:
 main.py
   --name <name> init [directory]
   scan [collection...]
-  list [collection...]
-  [--host <name>] status
-  --host <name> diff
+  [--host <name>] list
 """
   sys.exit(2)
 

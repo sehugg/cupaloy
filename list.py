@@ -1,18 +1,22 @@
 #!/usr/bin/python
 
-import sys,os,os.path,string
+import os,os.path,sys,uuid
+import tabulate
 from common import *
 
-###
-
 def run(args, keywords):
-  globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
-  for arg in args:
-    collection = parseCollection(globaldb, arg)
-    filesdb = openFileDatabase(collection.getFileDatabasePath(), create=True)
-    for row in filesdb.execute("SELECT path,name,size,modtime FROM files f JOIN folders p ON p.id=f.folder_id"):
-      print row
-    #TODO
-    filesdb.close()
-  globaldb.close()
-
+  globaldb = openGlobalDatabase(getGlobalDatabasePath(host=keywords.get('host')))
+  globaldb.row_factory = sqlite3.Row
+  results = globaldb.execute("""
+  SELECT 
+    name,
+    datetime(MAX(start_time),'unixepoch'),
+    ROUND(total_real_size/1000.0/1000.0,1),
+    num_real_files,
+    datetime(min_mtime,'unixepoch'),
+    datetime(max_mtime,'unixepoch')
+  FROM scans
+  GROUP BY uuid
+  """)
+  headers = ["Collection","Last Scan","Total MB","# Files","Oldest","Newest"]
+  print tabulate.tabulate(results.fetchall(), headers=headers)
