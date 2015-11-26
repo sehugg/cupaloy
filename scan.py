@@ -93,11 +93,17 @@ def processTarFile(arcfile, containerid=None):
           sf = ScanFile(joinPaths(arcfile.key, info.name), info.size, info.mtime)
           addFileEntry(filesdb, sf, containerid=containerid)
 
+class ZipScanFile(ScanFile):
+  def getFileHandle(self):
+    return self.zipfile.open(self.zipinfo,'r')
+
 def processZipFile(arcfile, containerid=None):
   with arcfile.getFileHandle() as f:
     with zipfile.ZipFile(f, 'r') as zipf:
       for info in zipf.infolist():
-        sf = ScanFile(joinPaths(arcfile.key, info.filename), info.file_size, info.date_time)
+        sf = ZipScanFile(joinPaths(arcfile.key, info.filename), info.file_size, info.date_time)
+        sf.zipfile = zipf
+        sf.zipinfo = info
         addFileEntry(filesdb, sf, containerid=containerid)
 
 def processArchive(arcfile, containerid=None):
@@ -106,16 +112,20 @@ def processArchive(arcfile, containerid=None):
       for entry in archive:
         if entry.isfile:
           sf = ScanFile(joinPaths(arcfile.key, entry.path), entry.size, entry.mtime)
+          # TODO: getFileHandle
           addFileEntry(filesdb, sf, containerid=containerid)
 
 def processScanFile(scanfile):
-  fileid = addFileEntry(filesdb, scanfile)
-  # file is added/modified, and has file handle
-  if type(fileid) == type(0L) and hasattr(scanfile, 'getFileHandle'):
+  fileinfo = addFileEntry(filesdb, scanfile)
+  wasmodified = type(fileinfo) == type(0L)
+  # file is added/modified (or force), and has file handle
+  if (force or wasmodified) and hasattr(scanfile, 'getFileHandle'):
+    fileid = fileinfo if wasmodified else fileinfo[0]
     try:
       fn = scanfile.key
       if fn.endswith(EXTS_COMPRESS):
         fn = os.path.splitext(fn)[0]
+        # TODO: decompress zip archives?
       if fn.endswith(EXTS_ZIP):
         processZipFile(scanfile, containerid=fileid)
       elif fn.endswith(EXTS_ARCHIVE):
@@ -146,8 +156,10 @@ def run(args, keywords):
       processScanFile(scanfile)
       filesdb.commit()
     print "Scan complete, updating database..."
-    scanres.deleteFilesNotSeenSince(filesdb, sessionStartTime)
-    scanres.deleteOrphanedFiles(filesdb)
+    numdeleted = scanres.deleteFilesNotSeenSince(filesdb, sessionStartTime)
+    numorphaned = scanres.deleteOrphanedFiles(filesdb)
+    if numdeleted or numorphaned:
+      print "%d files removed, %d orphaned" % (numdeleted, numorphaned)
     scanres.updateFromFilesTable(filesdb)
     scanres.addToScansTable(globaldb)
     print "Done."
