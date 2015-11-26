@@ -61,13 +61,6 @@ def addFileEntry(db, scanfile, containerid=None):
   mtime = scanfile.mtime
   size = scanfile.size
   # TODO: mtime == 0 or mtime > now
-  # TODO: do we really need to convert?
-  if type(path) != type(u''):
-    try:
-      path = path.decode('UTF-8')
-    except UnicodeEncodeError:
-      print (path, sys.exc_info())
-      path = path.decode('cp1252') #TODO?
   folderpath,filename = os.path.split(path)
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(db, folderpath, fileid=containerid)

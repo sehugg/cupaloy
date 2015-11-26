@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os.path,json,datetime,time,sqlite3,locale,urllib
+import sys,os.path,json,datetime,time,sqlite3,locale,urllib
 import platform,socket
 import uuid,urlparse
 import fnmatch
@@ -16,7 +16,7 @@ sessionStartTime = long(time.time())
 METADIR='.cupaloy'
 GLOBALDBFILE='hosts/%s.db'
 
-EXCLUDES=['.cupaloy','*~','.DS_Store','.~lock.*']
+EXCLUDES=['.cupaloy','*~','.DS_Store','.~lock.*','.Spotlight*']
 
 ###
 
@@ -415,10 +415,26 @@ def fixTimestamp(ts):
 
 ###
 
+def parseUnicode(s):
+  """
+  >>> parseUnicode('foo\x81')
+  u'foo\\xfc'
+  """
+  try:
+    return unicode(s)
+  except:
+    sys.stderr.write("'%s': %s'\n" % (s, sys.exc_info()))
+    # http://stackoverflow.com/questions/18648154/read-lines-of-a-textfile-and-getting-charmap-decode-error
+    # TODO?
+    try:
+      return s.decode('cp1252')
+    except:
+      return s.decode('cp850')
+
 class ScanFile:
 
   def __init__(self, key, size, mtime):
-    self.key = unicode(key)
+    self.key = parseUnicode(key)
     self.size = long(size)
     mtime = fixTimestamp(mtime)
     # filter out too soon or future times
