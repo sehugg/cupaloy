@@ -47,6 +47,8 @@ class OSXMountInfo:
         return m[1]
     return None
 
+# TODO: removable/online/writeonce
+
 ###
 
 if _platform == "darwin":

@@ -44,17 +44,47 @@ location
 - node/path
 
 
+TAGS
+
+online/offline vs permanent/transient/removable
+hd/ssd/tape/cloud/etc
+dynamic/static
+location tags? work/home/etc
+
+should inform longevity, risk, etc
+
+
 SCHEMA
 
 files
 folders
 hashes
 scans
+tags
 
 
 SCAN
 
 (scannode,uuid,url,volume?)
+
+
+PROTECTION
+
+obfuscate path, name, size, etc?
+- can still parse dir structure
+archive metadata can itself be archived
+
+
+USABILITY
+
+look at file signatures/formats
+parse files (archives for instance)
+run tests (make tests for instance)
+
+
+HIERARCHY
+
+Can have workspace containing git repos, match many-to-many collections
 
 
 BROADCAST
