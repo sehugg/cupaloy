@@ -417,11 +417,13 @@ def fixTimestamp(ts):
 
 def parseUnicode(s):
   """
-  >>> parseUnicode('foo\x81')
-  u'foo\\xfc'
+  >>> parseUnicode('foo\xcc\x81')
+  u'foo\\u0301'
   """
+  if type(s) == type(u''):
+    return s
   try:
-    return unicode(s)
+    return unicode(s, 'UTF-8')
   except:
     sys.stderr.write("'%s': %s'\n" % (s, sys.exc_info()))
     # http://stackoverflow.com/questions/18648154/read-lines-of-a-textfile-and-getting-charmap-decode-error
@@ -435,7 +437,7 @@ class ScanFile:
 
   def __init__(self, key, size, mtime):
     self.key = parseUnicode(key)
-    self.size = long(size)
+    self.size = long(size) if size is not None else None
     mtime = fixTimestamp(mtime)
     # filter out too soon or future times
     if mtime < 2 or mtime > sessionStartTime+(86400*365):

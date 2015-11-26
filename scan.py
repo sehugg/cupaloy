@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys,os,os.path,time
+import sys,os,os.path,time,traceback
 import tarfile,zipfile
 import sqlite3
 import libarchive
@@ -29,7 +29,7 @@ EXTS_ARCHIVE = (
   '.iso',
   '.pax', '.cpio', '.xar', '.lha', '.ar', '.cab', '.mtree', '.rar'
 )
-EXTS_COMPRESS = ('.gz','.bz2','.z','.lz','.xz','.lzma')
+EXTS_COMPRESS = ('.gz','.bz2','.z','.lz','.xz','.lzma','.uu')
 
 filesdb = None
 force = False
@@ -83,7 +83,7 @@ def processTarFile(arcfile, containerid=None):
     with tarfile.open(f, 'r') as tarf:
       for info in tarf:
         if info.isfile():
-          sf = ScanFile(joinPaths(arcfile.key, info.name), info.size, info.mtime)
+          sf = ScanFile(joinPaths(arcfile.key, parseUnicode(info.name)), info.size, info.mtime)
           addFileEntry(filesdb, sf, containerid=containerid)
 
 class ZipScanFile(ScanFile):
@@ -94,7 +94,7 @@ def processZipFile(arcfile, containerid=None):
   with arcfile.getFileHandle() as f:
     with zipfile.ZipFile(f, 'r') as zipf:
       for info in zipf.infolist():
-        sf = ZipScanFile(joinPaths(arcfile.key, info.filename), info.file_size, info.date_time)
+        sf = ZipScanFile(joinPaths(arcfile.key, parseUnicode(info.filename)), info.file_size, info.date_time)
         sf.zipfile = zipf
         sf.zipinfo = info
         addFileEntry(filesdb, sf, containerid=containerid)
@@ -104,7 +104,7 @@ def processArchive(arcfile, containerid=None):
     with libarchive.fd_reader(f.fileno()) as archive:
       for entry in archive:
         if entry.isfile:
-          sf = ScanFile(joinPaths(arcfile.key, entry.path), entry.size, entry.mtime)
+          sf = ScanFile(joinPaths(arcfile.key, parseUnicode(entry.path)), entry.size, entry.mtime)
           # TODO: getFileHandle
           addFileEntry(filesdb, sf, containerid=containerid)
 
@@ -116,10 +116,11 @@ def processScanFile(scanfile):
     fileid = fileinfo if wasmodified else fileinfo[0]
     try:
       fn = scanfile.key
+      compressed = False
       if fn.endswith(EXTS_COMPRESS):
         fn = os.path.splitext(fn)[0]
-        # TODO: decompress zip archives?
-      if fn.endswith(EXTS_ZIP):
+        compressed = True
+      if fn.endswith(EXTS_ZIP) and not compressed:
         processZipFile(scanfile, containerid=fileid)
       elif fn.endswith(EXTS_ARCHIVE):
         processArchive(scanfile, containerid=fileid)
@@ -127,17 +128,21 @@ def processScanFile(scanfile):
       filesdb.rollback()
       raise
     except:
-      print 'ERROR',sys.exc_info()
+      print 'ERROR:',sys.exc_info()[1]
+      #traceback.print_exc(file=sys.stderr)
       filesdb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[1]), fileid])
 
 
 ###
 
 def run(args, keywords):
-  global filesdb, force
+  global filesdb, force, compute_hashes
   force = 'force' in keywords
   if force:
     print "Forced refresh."
+  if 'nohash' in keywords:
+    compute_hashes = False
+    print "No hashes."
   globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
   for arg in args:
     cloc = parseCollection(globaldb, arg)
