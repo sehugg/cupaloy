@@ -32,6 +32,7 @@ class OSXMountInfo:
         for part in partitions:
           mp = part.get('MountPoint')
           if mp:
+            # TODO: UUID not same on Linux/OSX
             mounts.append((part.get('VolumeUUID'), mp))
     self.mounts = mounts
 

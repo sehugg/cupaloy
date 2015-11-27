@@ -94,3 +94,11 @@ challenge/response
 - quickly find relevant files
 - quickly check checksums
 - quickly find differences
+
+
+ISSUES
+
+timestamp, uuid differ on exfat from osx/linux
+need to identify node in location
+- better short id for collectionlocation
+what if computer name changes?

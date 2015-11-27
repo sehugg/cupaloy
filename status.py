@@ -43,11 +43,15 @@ def run(args, keywords):
   locidx = 0
   collidx = 0
   uuids = []
+  locset = set()
   for uuid,locs in clocs.items(): # TODO: order
     uuids.append(uuid)
     for loc in locs:
+      if loc in locset:
+        continue # TODO?
+      locset.add(loc)
       fdp = loc.getFileDatabasePath()
-      print loc
+      print locidx,loc
       mergedb.execute("ATTACH DATABASE ? AS db", [fdp])
       # add only real files
       mergedb.execute("""
@@ -103,6 +107,10 @@ def run(args, keywords):
   print tabulate.tabulate(table, headers=headers)
 
   if 0:
-    for row in mergedb.execute("SELECT dups,collidx,locs,path,name,size FROM dupfiles WHERE dups=1 ORDER BY collidx,locs,path,name"):
+    for row in mergedb.execute("SELECT dups,collidx,locs,path,name,minsize,maxsize,mintime,maxtime FROM dupfiles WHERE dups=1 ORDER BY collidx,locs,path,name"):
+      if isIncluded(row[3]) and isIncluded(row[4]):
+        print row
+  if 0:
+    for row in mergedb.execute("SELECT dups,collidx,locs,path,name,minsize,maxsize,mintime,maxtime FROM dupfiles WHERE mintime!=maxtime ORDER BY collidx,locs,path,name"):
       if isIncluded(row[3]) and isIncluded(row[4]):
         print row
