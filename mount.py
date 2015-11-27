@@ -27,10 +27,12 @@ class OSXMountInfo:
     plist = readPlistFromString(xml)
     mounts = []
     for disk in plist['AllDisksAndPartitions']:
-      for part in disk['Partitions']:
-        mp = part.get('MountPoint')
-        if mp:
-          mounts.append((part.get('VolumeUUID'), mp))
+      partitions = disk.get('Partitions')
+      if partitions:
+        for part in partitions:
+          mp = part.get('MountPoint')
+          if mp:
+            mounts.append((part.get('VolumeUUID'), mp))
     self.mounts = mounts
 
   def forPath(self, path):
