@@ -1,17 +1,17 @@
 #!/usr/bin/python
 
-import getopt,sys,importlib
+import getopt,sys,importlib,uuid
 
 verbose = 0
 
-COMMANDS = ['init','scan','status','list','dups']
+COMMANDS = ['init','scan','status','list','dups','rename']
 
 commandsToRun = []
 arguments = []
 keywords = {}
 
 try:
-  opts, args = getopt.getopt(sys.argv[1:],"vn:h:fo",["verbose","name=","host=","force=","omithash"])
+  opts, args = getopt.getopt(sys.argv[1:],"vn:h:fou",["verbose","name=","host=","force=","omithash","uuid="])
   for opt, arg in opts:
     if opt in ('-v','--verbose'):
       verbose += 1
@@ -23,6 +23,8 @@ try:
       keywords['force'] = 1
     elif opt in ('-o','--omithash'):
       keywords['nohash'] = 1
+    elif opt in ('-u','--uuid'):
+      keywords['uuid'] = str(uuid.UUID(arg))
   for arg in args:
     if arg in COMMANDS:
       commandsToRun.append(arg)
@@ -39,6 +41,7 @@ main.py
   [--host <name>] list
   status
   dups
+  [--name <name>] [--uuid <uuid>] rename [collection]
 """
   sys.exit(2)
 

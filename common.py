@@ -179,9 +179,10 @@ class Collection:
 
 class CollectionLocation:
 
-  def __init__(self, collection, url):
+  def __init__(self, collection, url, cfgpath=None):
     self.collection = collection
     self.url = url
+    self.cfgpath = cfgpath
 
   """
   Find the corresponding file database for this collection.
@@ -203,7 +204,7 @@ def loadCollectionLocation(dir):
   if os.path.exists(cfgfn):
     with open(cfgfn,'r') as inf:
       obj = json.load(inf)
-      return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir))
+      return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir), cfgpath=cfgfn)
   else:
     raise Exception("Could not find collection at %s" % dir)
     # TODO: no config file? override name? warning?
