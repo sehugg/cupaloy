@@ -79,6 +79,58 @@ def getAllHostDBFiles():
 def getAllCollectionUUIDs():
   return os.listdir(os.path.join(getHomeMetaDir(), "collections"))
 
+def getAllCollectionLocations():
+  clocs = {}
+  # find all collection locations
+  for dbfn in getAllHostDBFiles():
+    db = openGlobalDatabase(os.path.join(getHomeMetaDir(), 'hosts', dbfn))
+    for cl in getCollectionLocationsFromDB(db):
+      try:
+        clocs[cl.collection.uuid].append(cl)
+      except KeyError:
+        clocs[cl.collection.uuid] = [cl]
+    db.close()
+  return clocs
+
+def getMergedFileDatabase(clocs):
+  # insert into merged db
+  mergedb = sqlite3.connect(":memory:")
+  mergedb.execute("""
+  CREATE TABLE files (
+    locidx INTEGER,
+    collidx INTEGER,
+    path TEXT,
+    name TEXT,
+    size LONG,
+    modtime LONG,
+    hash_md5 BINARY,
+    is_real BOOL
+  )
+  """)
+  # TODO: locs from more than one host
+  locidx = 0
+  collidx = 0
+  locset = set()
+  for uuid,locs in clocs.items(): # TODO: order
+    for loc in locs:
+      if loc in locset:
+        continue # TODO?
+      locset.add(loc)
+      fdp = loc.getFileDatabasePath()
+      print locidx,loc
+      mergedb.execute("ATTACH DATABASE ? AS db", [fdp])
+      # add only real files
+      mergedb.execute("""
+      INSERT INTO files
+      SELECT ?,?,path,name,size,modtime,hash_md5,file_id IS NULL AS is_real
+        FROM db.files f
+        JOIN db.folders p ON p.id=f.folder_id
+       WHERE is_real
+      """, [locidx, collidx])
+      mergedb.execute("DETACH DATABASE db")
+      locidx += 1
+    collidx += 1
+  return mergedb
 
 ###
 
@@ -181,7 +233,7 @@ def getFileURL(path):
     # TODO? node name?
     return 'file:///%s' % (abspath)
 
-def getAllCollectionLocations(globaldb):
+def getCollectionLocationsFromDB(globaldb):
   # select most recent scan
   rows = globaldb.execute("""
   SELECT DISTINCT uuid,name,url,MAX(start_time)
@@ -446,6 +498,7 @@ class ScanFile:
 
   def __repr__(self):
     return str((self.key, self.size, self.mtime))
+
 
 ###
 

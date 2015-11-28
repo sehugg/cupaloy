@@ -15,57 +15,9 @@ def pct(n,d,dups):
     return "%5.1f%%" % (math.floor(n*1000.0/d)/10.0)
 
 def run(args, keywords):
-  clocs = {}
-  # find all collection locations
-  for dbfn in getAllHostDBFiles():
-    db = openGlobalDatabase(os.path.join(getHomeMetaDir(), 'hosts', dbfn))
-    for cl in getAllCollectionLocations(db):
-      try:
-        clocs[cl.collection.uuid].append(cl)
-      except KeyError:
-        clocs[cl.collection.uuid] = [cl]
-    db.close()
-  # insert into merged db
-  mergedb = sqlite3.connect(":memory:")
-  mergedb.execute("""
-  CREATE TABLE files (
-    locidx INTEGER,
-    collidx INTEGER,
-    path TEXT,
-    name TEXT,
-    size LONG,
-    modtime LONG,
-    hash_md5 BINARY,
-    is_real BOOL
-  )
-  """)
-  # TODO: locs from more than one host
-  locidx = 0
-  collidx = 0
-  uuids = []
-  locset = set()
-  for uuid,locs in clocs.items(): # TODO: order
-    uuids.append(uuid)
-    for loc in locs:
-      if loc in locset:
-        continue # TODO?
-      locset.add(loc)
-      fdp = loc.getFileDatabasePath()
-      print locidx,loc
-      mergedb.execute("ATTACH DATABASE ? AS db", [fdp])
-      # add only real files
-      mergedb.execute("""
-      INSERT INTO files
-      SELECT ?,?,path,name,size,modtime,hash_md5,file_id IS NULL AS is_real
-        FROM db.files f
-        JOIN db.folders p ON p.id=f.folder_id
-       WHERE is_real
-      """, [locidx, collidx])
-      mergedb.execute("DETACH DATABASE db")
-      locidx += 1
-    collidx += 1
-  # select
-  #mergedb.execute("CREATE INDEX file_idx_name ON files(collidx,name)")
+  clocs = getAllCollectionLocations()
+  mergedb = getMergedFileDatabase(clocs)
+  uuids = clocs.keys()
   mergedb.execute("""
   CREATE TABLE dupfiles AS
     SELECT COUNT(*) as dups,collidx,GROUP_CONCAT(locidx) as locs,path,name,
