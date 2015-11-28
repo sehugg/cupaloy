@@ -4,7 +4,7 @@ import getopt,sys,importlib
 
 verbose = 0
 
-COMMANDS = ['init','scan','status','list','diff']
+COMMANDS = ['init','scan','status','list','dups']
 
 commandsToRun = []
 arguments = []
@@ -37,6 +37,8 @@ main.py
   --name <name> init [directory]
   scan [collection...]
   [--host <name>] list
+  status
+  dups
 """
   sys.exit(2)
 

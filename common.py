@@ -92,7 +92,7 @@ def getAllCollectionLocations():
     db.close()
   return clocs
 
-def getMergedFileDatabase(clocs):
+def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
   # insert into merged db
   mergedb = sqlite3.connect(":memory:")
   mergedb.execute("""
@@ -111,6 +111,7 @@ def getMergedFileDatabase(clocs):
   locidx = 0
   collidx = 0
   locset = set()
+  realvirt = ['','1','0','0,1'][include_real+(include_virtual*2)] # IN(?) sql clause
   for uuid,locs in clocs.items(): # TODO: order
     for loc in locs:
       if loc in locset:
@@ -125,8 +126,9 @@ def getMergedFileDatabase(clocs):
       SELECT ?,?,path,name,size,modtime,hash_md5,file_id IS NULL AS is_real
         FROM db.files f
         JOIN db.folders p ON p.id=f.folder_id
-       WHERE is_real
-      """, [locidx, collidx])
+       WHERE is_real IN (%s)
+      """ % (realvirt), [locidx, collidx])
+      #print realvirt,include_real,include_virtual,include_real+include_virtual
       mergedb.execute("DETACH DATABASE db")
       locidx += 1
     collidx += 1
@@ -245,7 +247,7 @@ def getCollectionLocationsFromDB(globaldb):
 """
 Find matching collections from a directory path, URL or (partial) name.
 """
-def parseCollections(globaldb, arg):
+def parseCollectionLocations(globaldb, arg):
   # if it's a directory, return it
   if os.path.isdir(arg):
     return [ loadCollectionLocation(arg) ]
@@ -261,8 +263,8 @@ def parseCollections(globaldb, arg):
 """
 Find a single collection from a directory path, URL or (partial) name.
 """
-def parseCollection(globaldb, arg, disambiguate=True):
-  results = parseCollections(globaldb, arg)
+def parseCollectionLocation(globaldb, arg, disambiguate=True):
+  results = parseCollectionLocations(globaldb, arg)
   if len(results) == 0:
     raise Exception( "Could not find collection for '%s'." % (arg) )
   elif len(results) > 1 and not disambiguate:

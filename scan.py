@@ -145,7 +145,7 @@ def run(args, keywords):
     print "No hashes."
   globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
   for arg in args:
-    cloc = parseCollection(globaldb, arg)
+    cloc = parseCollectionLocation(globaldb, arg)
     print "Scanning %s" % (str(cloc))
     filesdb = openFileDatabase(cloc.getFileDatabasePath(), create=True)
     scanres = ScanResults(cloc)
