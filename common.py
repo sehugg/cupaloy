@@ -214,19 +214,19 @@ class CollectionLocation:
 """
 Load a collection definition from a metadata directory.
 """
-def loadCollectionLocation(dir):
+def loadCollectionLocation(dir, create=False):
   cfgfn = os.path.join(dir, METADIR, Collection.METAFILENAME)
   if os.path.exists(cfgfn):
     with open(cfgfn,'r') as inf:
       obj = json.load(inf)
       return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir))
-  else:
-    raise Exception("Could not find collection at %s" % dir)
-    # TODO: no config file? override name? warning?
+  elif create:
     url = getFileURL(dir)
     uid = uuid.uuid3(uuid.NAMESPACE_URL, url)
     name = urlparse.urlparse(url).netloc
     return CollectionLocation(Collection(uid, name), url)
+  else:
+    raise Exception("Could not find collection at %s" % dir)
 
 """
 Returns a file URL of the form "file://nodename/path"
@@ -278,10 +278,10 @@ def getCollectionLocationsFromDB(globaldb):
 """
 Find matching collections from a directory path, URL or (partial) name.
 """
-def parseCollectionLocations(globaldb, arg):
+def parseCollectionLocations(globaldb, arg, create=False):
   # if it's a directory, return it
   if os.path.isdir(arg):
-    return [ loadCollectionLocation(arg) ]
+    return [ loadCollectionLocation(arg, create) ]
   # match the string against recently scanned collections
   # TODO: match with config file?
   rows = globaldb.execute("""
@@ -294,8 +294,8 @@ def parseCollectionLocations(globaldb, arg):
 """
 Find a single collection from a directory path, URL or (partial) name.
 """
-def parseCollectionLocation(globaldb, arg, disambiguate=True):
-  results = parseCollectionLocations(globaldb, arg)
+def parseCollectionLocation(globaldb, arg, disambiguate=True, create=False):
+  results = parseCollectionLocations(globaldb, arg, create)
   if len(results) == 0:
     raise Exception( "Could not find collection for '%s'." % (arg) )
   elif len(results) > 1 and not disambiguate:

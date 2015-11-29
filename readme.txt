@@ -104,4 +104,8 @@ need to identify node in location
 what if computer name changes?
 what if file path changes?
 - when does config file have to be checked?
+- what if removable drive and files are not at same path?
+- what if mount changes?
 how to retire a collection/location?
+what char. set for archives?
+https://docs.python.org/2/library/argparse.html#module-argparse

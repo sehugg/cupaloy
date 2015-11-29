@@ -50,6 +50,14 @@ class OSXMountInfo:
         return m[1]
     return None
 
+###
+
+class WindowsMountInfo:
+
+  def __init__(self):
+    raise Exception("Not yet implemented")
+    # TODO
+
 # TODO: removable/online/writeonce
 
 ###
@@ -65,6 +73,6 @@ else:
 
 if __name__ == '__main__':
   print mountInfo.forPath("/")
+  print mountInfo.forPath("/media/huggvey/ISOIMAGE/boot")
   print mountInfo.forPath("a06997a7-9a7a-4395-9aa2-8630f3eb13b2")
   print mountInfo.locationForUUID("2012-07-03-20-55-41-00")
-  

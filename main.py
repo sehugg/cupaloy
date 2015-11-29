@@ -13,7 +13,7 @@ def runCommand(argv):
   keywords = {}
   
   try:
-    opts, args = getopt.getopt(argv,"vn:h:fou",["verbose","name=","host=","force=","omithash","uuid="])
+    opts, args = getopt.getopt(argv,"vn:h:four",["verbose","name=","host=","force=","omithash","uuid=","rescan"])
     for opt, arg in opts:
       if opt in ('-v','--verbose'):
         verbose += 1
@@ -23,6 +23,8 @@ def runCommand(argv):
         keywords['host'] = arg
       elif opt in ('-f','--force'):
         keywords['force'] = 1
+      elif opt in ('-r','--rescan'):
+        keywords['rescan'] = 1
       elif opt in ('-o','--omithash'):
         keywords['nohash'] = 1
       elif opt in ('-u','--uuid'):
@@ -38,8 +40,8 @@ def runCommand(argv):
   if len(commandsToRun) == 0:
     print """
   main.py
-    --name <name> init [directory]
-    scan [collection...]
+    --name <name> [--uuid uuid] init [directory]
+    [--force] [--rescan] [--omithash] scan [collection...]
     [--host <name>] list
     status
     dups

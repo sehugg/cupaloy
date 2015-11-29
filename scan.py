@@ -33,6 +33,7 @@ EXTS_COMPRESS = ('.gz','.bz2','.z','.lz','.xz','.lzma','.uu')
 
 filesdb = None
 force = False
+rescan = False
 compute_hashes = True
 
 def computeHashOfFile(f, hashfn):
@@ -75,7 +76,7 @@ def addFileEntry(db, scanfile, containerid=None):
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(db, folderpath, fileid=containerid)
   cur = db.cursor()
-  fileinfo = not force and cur.execute("SELECT id,size,modtime,hash_md5 FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND errors IS NULL", [folderid, filename, size, mtime]).fetchone()
+  fileinfo = not rescan and cur.execute("SELECT id,size,modtime,hash_md5 FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND errors IS NULL", [folderid, filename, size, mtime]).fetchone()
   if fileinfo:
     if not fileinfo[3]: #TODO?
       updateHash(db, fileinfo[0], scanfile)
@@ -122,8 +123,8 @@ def processArchive(arcfile, containerid=None):
 def processScanFile(scanfile):
   fileinfo = addFileEntry(filesdb, scanfile)
   wasmodified = type(fileinfo) == type(0L)
-  # file is added/modified (or force), and has file handle
-  if (force or wasmodified) and hasattr(scanfile, 'getFileHandle'):
+  # file is added/modified (or rescan), and has file handle
+  if (rescan or wasmodified) and hasattr(scanfile, 'getFileHandle'):
     fileid = fileinfo if wasmodified else fileinfo[0]
     try:
       fn = scanfile.key
@@ -148,10 +149,11 @@ def processScanFile(scanfile):
 ###
 
 def run(args, keywords):
-  global filesdb, force, compute_hashes
+  global filesdb, force, rescan, compute_hashes
   force = 'force' in keywords
-  if force:
-    print "Forced refresh."
+  rescan = 'rescan' in keywords
+  if rescan:
+    print "Rescanning."
   if 'nohash' in keywords:
     compute_hashes = False
     print "No hashes."
@@ -160,7 +162,7 @@ def run(args, keywords):
     print "Must specify at least one collection."
     return False
   for arg in args:
-    cloc = parseCollectionLocation(globaldb, arg)
+    cloc = parseCollectionLocation(globaldb, arg, create=force)
     print "Scanning %s" % (str(cloc))
     filesdb = openFileDatabase(cloc.getFileDatabasePath(), create=True)
     scanres = ScanResults(cloc)

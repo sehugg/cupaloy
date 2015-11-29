@@ -14,6 +14,7 @@ class TestInit(unittest.TestCase):
     tmpdir = tempfile.mkdtemp()
     setHomeMetaDir(tmpdir)
     assert runCommand(['scan','./tests/files']) == 0
+    assert runCommand(['scan','./tests/files']) == 0
     shutil.rmtree(tmpdir)
 
 ###
