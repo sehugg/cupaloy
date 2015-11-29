@@ -285,16 +285,25 @@ def parseCollectionLocations(globaldb, arg, create=False):
   # match the string against recently scanned collections
   # TODO: match with config file?
   rows = globaldb.execute("""
-  SELECT DISTINCT uuid,name,url FROM scans
-  WHERE uuid LIKE ?||'%' OR name LIKE ?||'%' OR url LIKE ?||'%'
-  ORDER BY start_time DESC
-  """, [arg, arg, arg])
-  return [CollectionLocation(Collection(x,y),z) for x,y,z in rows]
+  SELECT uuid,name,url,MAX(start_time) FROM scans
+  WHERE uuid=? OR name=? or url=? 
+  GROUP BY uuid,url
+  ORDER BY MAX(start_time) DESC
+  """, [arg, arg, arg]).fetchall()
+  # exact match failed? prefix match
+  if len(rows)==0:
+    rows = globaldb.execute("""
+    SELECT uuid,name,url,MAX(start_time) FROM scans
+    WHERE uuid LIKE ?||'%' OR name LIKE ?||'%' OR url LIKE ?||'%'
+    GROUP BY uuid,url
+    ORDER BY MAX(start_time) DESC
+    """, [arg, arg, arg]).fetchall()
+  return [CollectionLocation(Collection(x,y),z) for x,y,z,t in rows]
 
 """
 Find a single collection from a directory path, URL or (partial) name.
 """
-def parseCollectionLocation(globaldb, arg, disambiguate=True, create=False):
+def parseCollectionLocation(globaldb, arg, disambiguate=False, create=False):
   results = parseCollectionLocations(globaldb, arg, create)
   if len(results) == 0:
     raise Exception( "Could not find collection for '%s'." % (arg) )

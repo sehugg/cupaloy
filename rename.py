@@ -9,6 +9,7 @@ def run(args, keywords):
   if not name and not uuid:
     print "Must specify --name or --uuid"
     return False
+  # TODO: --host?
   globaldb = openGlobalDatabase(getGlobalDatabasePath())
   if not globaldb:
     print "No host database."

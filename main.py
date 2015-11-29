@@ -3,7 +3,7 @@
 import getopt,sys,importlib,uuid
 import common
 
-COMMANDS = ['init','scan','status','list','dups','rename']
+COMMANDS = ['init','scan','status','list','dups','rename','retire']
 
 def runCommand(argv):
 
@@ -46,6 +46,7 @@ def runCommand(argv):
     status
     dups
     [--name <name>] [--uuid <uuid>] rename [collection]
+    retire [collection]
   """
     return 2
 
