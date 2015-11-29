@@ -26,7 +26,8 @@ def run(args, keywords):
       MIN(IFNULL(modtime,-1)) as mintime,
       MAX(IFNULL(modtime,0)) as maxtime,
       MIN(IFNULL(hash_md5,'')) as minhash,
-      MAX(IFNULL(hash_md5,'-')) as maxhash
+      MAX(IFNULL(hash_md5,'-')) as maxhash,
+      SUM(has_errors) as nerrors
     FROM files
     GROUP BY collidx,path,name
   """)
@@ -37,7 +38,8 @@ def run(args, keywords):
     SUM(maxsize) as totsize,
     SUM(minsize=maxsize) as samesize,
     SUM(mintime=maxtime) as sametime,
-    SUM(minhash=maxhash) as samehash
+    SUM(minhash=maxhash) as samehash,
+    SUM(nerrors) as nerrors
   FROM dupfiles
   GROUP BY collidx,dups,locs
   """).fetchall()
@@ -51,10 +53,11 @@ def run(args, keywords):
       pct(samesize,nfiles,dups),
       pct(samehash,nfiles,dups),
       pct(sametime,nfiles,dups),
+      pct(nerrors,nfiles,dups)
     )
-    for collidx,dups,locs,nfiles,totsize,samesize,sametime,samehash in results
+    for collidx,dups,locs,nfiles,totsize,samesize,sametime,samehash,nerrors in results
   ]
-  headers = ["Collection","# Copies","Locations","# Files","Total MB","Size Match","Hash Match","Time Match"]
+  headers = ["Collection","# Copies","Locations","# Files","Total MB","=Size","=Hash","=Time","Errors"]
   print
   print tabulate.tabulate(table, headers=headers)
 

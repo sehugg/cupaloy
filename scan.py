@@ -35,6 +35,21 @@ filesdb = None
 force = False
 compute_hashes = True
 
+def computeHashOfFile(f, hashfn):
+  """
+  >>> import binascii
+  >>> binascii.hexlify(computeHashOfFile(open('tests/root/emptyfile.txt','r'), hashlib.md5))
+  'd41d8cd98f00b204e9800998ecf8427e'
+  >>> binascii.hexlify(computeHashOfFile(open('tests/archives/root/rabin.tgz.bz2','r'), hashlib.md5))
+  '704ca9f2a35f52960f4f94926991241b'
+  """
+  m = hashfn()
+  arr = f.read(0x1000)
+  while arr:
+    m.update(arr)
+    arr = f.read(0x1000)
+  return m.digest()
+
 def computeHash(scanfile, hashfn):
   if not compute_hashes:
     return None
@@ -44,12 +59,7 @@ def computeHash(scanfile, hashfn):
     return None
   with scanfile.getFileHandle() as f:
     if f:
-      m = hashfn()
-      arr = f.read(0x1000)
-      while arr:
-        m.update(arr)
-        arr = f.read(0x1000)
-      return m.digest()
+      return computeHashOfFile(f, hashfn)
 
 def updateHash(db, fileid, scanfile):
   hash_md5 = computeHash(scanfile, hashlib.md5)
@@ -144,6 +154,9 @@ def run(args, keywords):
     compute_hashes = False
     print "No hashes."
   globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
+  if len(args)==0:
+    print "Must specify at least one collection."
+    return False
   for arg in args:
     cloc = parseCollectionLocation(globaldb, arg)
     print "Scanning %s" % (str(cloc))
@@ -159,9 +172,15 @@ def run(args, keywords):
     if numdeleted or numorphaned:
       print "%d files removed, %d orphaned" % (numdeleted, numorphaned)
     scanres.updateFromFilesTable(filesdb)
+    print scanres
     scanres.addToScansTable(globaldb)
     print "Done."
     filesdb.close()
   globaldb.close()
   return True
 
+###
+
+if __name__ == '__main__':
+  import doctest, scan
+  doctest.testmod(scan)

@@ -8,20 +8,20 @@ def run(args, keywords):
   uuid = keywords.get('uuid')
   if not name and not uuid:
     print "Must specify --name or --uuid"
-    sys.exit(2)
+    return False
   globaldb = openGlobalDatabase(getGlobalDatabasePath())
   if not globaldb:
     print "No host database."
-    sys.exit(2)
+    return False
   if len(args) != 1:
     print "Must specify exactly one collection."
-    sys.exit(2)
+    return False
   cloc = parseCollectionLocation(globaldb, args[0])
   print "Renaming %s" % cloc
   srcdbpath = cloc.getFileDatabasePath()
   if not os.path.exists(srcdbpath):
     print "Cannot find file database @ %s" % srcdbpath
-    sys.exit(2)
+    return False
   if name:
     print "New name = '%s'" % name
     cloc.collection.name = name
@@ -29,14 +29,17 @@ def run(args, keywords):
     print "New UUID = '%s'" % uuid
     cloc.collection.uuid = uuid
   destdbpath = cloc.getFileDatabasePath()
+  # write changes?
   if keywords.get('force'):
     if srcdbpath != destdbpath:
       os.renames(srcdbpath, destdbpath)
-    print "Updating '%s'" % cloc.cfgpath
-    cloc.collection.write(cloc.cfgpath, True) # TODO: cfgpath in collection?
-    sys.exit(0)
+    cfgfn = os.path.join(getDirectoryFromFileURL(cloc.url), METADIR)
+    assert os.path.exists(cfgfn)
+    cloc.collection.write(cfgfn, True)
+    # TODO: update global db?
+    return True
   else:
     print "Not updating file unless -f (--force) is set."
-    sys.exit(1)
+    return False
   
 

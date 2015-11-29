@@ -7,10 +7,10 @@ def run(args, keywords):
   name = keywords.get('name')
   if not name:
     print "Must specify --name"
-    sys.exit(2)
+    return False
   if len(args) != 1 or not os.path.isdir(args[0]):
     print "Must specify exactly one existing directory."
-    sys.exit(2)
+    return False
   # TODO: exists?
   path = args[0]
   metadir = getMetaDir(path)

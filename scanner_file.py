@@ -17,15 +17,9 @@ class FilesystemFile(ScanFile):
 class FileScanner:
 
   def __init__(self, url):
-    pr = urlparse.urlparse(url)
-    assert pr.scheme == 'file'
-    # if file://netloc/, prepend root of mount to path
-    # TODO?
-    if pr.netloc and len(pr.netloc):
-      self.rootDir = os.path.normpath(os.path.join(mountInfo.locationForUUID(pr.netloc), pr.path[1:]))
-    else:
-      self.rootDir = pr.path
+    self.rootDir = getDirectoryFromFileURL(url)
     assert os.path.isdir(self.rootDir)
+    # TODO: make sure config file exists?
     # TODO: no trailing slash?
 
   def scan(self):

@@ -16,7 +16,7 @@ sessionStartTime = long(time.time())
 METADIR='.cupaloy'
 GLOBALDBFILE='hosts/%s.db'
 
-EXCLUDES=['.cupaloy','*~','.DS_Store','.~lock.*','.Spotlight*']
+EXCLUDES=['.cupaloy','*~','.DS_Store','._*','.~lock.*','.Spotlight*']
 
 ###
 
@@ -104,7 +104,8 @@ def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
     size LONG,
     modtime LONG,
     hash_md5 BINARY,
-    is_real BOOL
+    is_real BOOL,
+    has_errors BOOL
   )
   """)
   # TODO: locs from more than one host
@@ -117,19 +118,25 @@ def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
       if loc in locset:
         continue # TODO?
       fdp = loc.getFileDatabasePath()
-      print locidx,loc
+      if not os.path.exists(fdp):
+        print "*** No db file %s" % fdp
+        continue
+      if os.path.getsize(fdp) <= 0:
+        print "*** Empty db file %s" % fdp
+        continue
       mergedb.execute("ATTACH DATABASE ? AS db", [fdp])
       try:
         # add only real files
         mergedb.execute("""
         INSERT INTO files
-        SELECT ?,?,path,name,size,modtime,hash_md5,file_id IS NULL AS is_real
+        SELECT ?,?,path,name,size,modtime,hash_md5,file_id IS NULL AS is_real,errors IS NOT NULL AS has_errors
           FROM db.files f
           JOIN db.folders p ON p.id=f.folder_id
          WHERE is_real IN (%s)
         """ % (realvirt), [locidx, collidx])
         #print realvirt,include_real,include_virtual,include_real+include_virtual
         locset.add(loc)
+        print locidx,loc
         locidx += 1
       except sqlite3.OperationalError: # TODO?
         traceback.print_exc(file=sys.stderr)
@@ -182,10 +189,9 @@ class Collection:
 
 class CollectionLocation:
 
-  def __init__(self, collection, url, cfgpath=None):
+  def __init__(self, collection, url):
     self.collection = collection
     self.url = url
-    self.cfgpath = cfgpath
 
   """
   Find the corresponding file database for this collection.
@@ -207,7 +213,7 @@ def loadCollectionLocation(dir):
   if os.path.exists(cfgfn):
     with open(cfgfn,'r') as inf:
       obj = json.load(inf)
-      return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir), cfgpath=cfgfn)
+      return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir))
   else:
     raise Exception("Could not find collection at %s" % dir)
     # TODO: no config file? override name? warning?
@@ -239,6 +245,20 @@ def getFileURL(path):
     # TODO? node name?
     return 'file:///%s' % (abspath)
 
+def getDirectoryFromFileURL(url):
+  """
+  >>> getDirectoryFromFileURL(getFileURL('/tmp'))
+  '/tmp'
+  """
+  pr = urlparse.urlparse(url)
+  assert pr.scheme == 'file'
+  # if file://netloc/, prepend root of mount to path
+  # TODO?
+  if pr.netloc and len(pr.netloc):
+    return os.path.normpath(os.path.join(mountInfo.locationForUUID(pr.netloc), pr.path[1:]))
+  else:
+    return pr.path
+
 def getCollectionLocationsFromDB(globaldb):
   # select most recent scan
   rows = globaldb.execute("""
@@ -246,6 +266,7 @@ def getCollectionLocationsFromDB(globaldb):
   FROM scans
   GROUP BY uuid,url
   """)
+  # TODO: timestamp?
   return [CollectionLocation(Collection(x,y),z) for x,y,z,t in rows]  
 
 """
@@ -343,6 +364,10 @@ class ScanResults:
     self.max_mtime = None
     self.total_real_size = None
     self.hash_metadata = None
+
+  def __repr__(self):
+    #return "%s/%s real/virtual files, %s modified, %s added, %s deleted, %s bytes" % (self.num_real_files, self.num_virtual_files, self.num_modified, self.num_added, self.num_deleted, self.total_real_size)
+    return "%s/%s real/virtual files, %s bytes" % (self.num_real_files, self.num_virtual_files, self.total_real_size)
   
   def updateFromFilesTable(self, db):
     self.end_time = long(time.time())
@@ -504,7 +529,6 @@ class ScanFile:
 
   def __repr__(self):
     return str((self.key, self.size, self.mtime))
-
 
 ###
 
