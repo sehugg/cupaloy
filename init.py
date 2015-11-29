@@ -14,7 +14,10 @@ def run(args, keywords):
   # TODO: exists?
   path = args[0]
   metadir = getMetaDir(path)
-  uid = uuid.uuid4()
+  # set or generate UUID?
+  uid = keywords.get('uuid')
+  if not uid:
+    uid = uuid.uuid4()
   cl = CollectionLocation(Collection(uid, name), getFileURL(path))
   cl.collection.write(metadir)
   print "Created %s" % (cl)

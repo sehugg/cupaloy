@@ -3,7 +3,7 @@
 import sys,os.path,json,datetime,time,sqlite3,locale,urllib
 import platform,socket
 import uuid,urlparse
-import fnmatch
+import fnmatch,traceback
 from mount import *
 
 # set UTF-8 locale
@@ -116,21 +116,24 @@ def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
     for loc in locs:
       if loc in locset:
         continue # TODO?
-      locset.add(loc)
       fdp = loc.getFileDatabasePath()
       print locidx,loc
       mergedb.execute("ATTACH DATABASE ? AS db", [fdp])
-      # add only real files
-      mergedb.execute("""
-      INSERT INTO files
-      SELECT ?,?,path,name,size,modtime,hash_md5,file_id IS NULL AS is_real
-        FROM db.files f
-        JOIN db.folders p ON p.id=f.folder_id
-       WHERE is_real IN (%s)
-      """ % (realvirt), [locidx, collidx])
-      #print realvirt,include_real,include_virtual,include_real+include_virtual
+      try:
+        # add only real files
+        mergedb.execute("""
+        INSERT INTO files
+        SELECT ?,?,path,name,size,modtime,hash_md5,file_id IS NULL AS is_real
+          FROM db.files f
+          JOIN db.folders p ON p.id=f.folder_id
+         WHERE is_real IN (%s)
+        """ % (realvirt), [locidx, collidx])
+        #print realvirt,include_real,include_virtual,include_real+include_virtual
+        locset.add(loc)
+        locidx += 1
+      except sqlite3.OperationalError: # TODO?
+        traceback.print_exc(file=sys.stderr)
       mergedb.execute("DETACH DATABASE db")
-      locidx += 1
     collidx += 1
   return mergedb
 
