@@ -1,19 +1,19 @@
 #!/usr/bin/python
 
 import getopt,sys,importlib,uuid
-
-verbose = 0 # TODO
+import common
 
 COMMANDS = ['init','scan','status','list','dups','rename']
 
 def runCommand(argv):
 
+  verbose = 0
   commandsToRun = []
   arguments = []
   keywords = {}
   
   try:
-    opts, args = getopt.getopt(sys.argv[1:],"vn:h:fou",["verbose","name=","host=","force=","omithash","uuid="])
+    opts, args = getopt.getopt(argv,"vn:h:fou",["verbose","name=","host=","force=","omithash","uuid="])
     for opt, arg in opts:
       if opt in ('-v','--verbose'):
         verbose += 1
@@ -47,6 +47,7 @@ def runCommand(argv):
   """
     return 2
 
+  common.verbose = verbose
   for cmd in commandsToRun:
     result = importlib.import_module(cmd).run(arguments, keywords)
     if result == False:

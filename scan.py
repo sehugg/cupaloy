@@ -82,7 +82,8 @@ def addFileEntry(db, scanfile, containerid=None):
     cur.execute("UPDATE files SET lastseentime=? WHERE id=?", [sessionStartTime, fileinfo[0]])
     return fileinfo
   else:
-    print (folderid, folderpath, filename, size, mtime)
+    if verbose:
+      print (folderid, folderpath, filename, size, mtime)
     cur.execute("INSERT OR REPLACE INTO files (folder_id,name,size,modtime,lastseentime,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
     fileid = long(cur.lastrowid)
     updateHash(db, fileid, scanfile)
@@ -139,7 +140,8 @@ def processScanFile(scanfile):
       raise
     except:
       print 'ERROR:',sys.exc_info()[1]
-      #traceback.print_exc(file=sys.stderr)
+      if verbose:
+        traceback.print_exc(file=sys.stderr)
       filesdb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[1]), fileid])
 
 

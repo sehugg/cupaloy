@@ -18,6 +18,8 @@ GLOBALDBFILE='hosts/%s.db'
 
 EXCLUDES=['.cupaloy','*~','.DS_Store','._*','.~lock.*','.Spotlight*']
 
+verbose = 0
+
 ###
 
 def isIncluded(name):
@@ -64,6 +66,10 @@ def humansize(nbytes):
 def getHomeMetaDir():
   homedir = os.environ.get('CUPALOY_HOME') or os.environ['HOME']
   return os.path.join(homedir, METADIR)
+
+def setHomeMetaDir(dir):
+  assert os.path.isdir(dir)
+  os.environ['CUPALOY_HOME'] = dir
 
 def getGlobalDatabasePath(host=None):
   dir = getHomeMetaDir()
@@ -508,7 +514,9 @@ def parseUnicode(s):
   try:
     return unicode(s, 'UTF-8')
   except:
-    sys.stderr.write("'%s': %s'\n" % (s, sys.exc_info()))
+    sys.stderr.write("Error decoding %s: %s\n" % ((s,), sys.exc_info()[1]))
+    if verbose:
+      traceback.print_exc(file=sys.stderr)
     # http://stackoverflow.com/questions/18648154/read-lines-of-a-textfile-and-getting-charmap-decode-error
     # TODO?
     try:

@@ -1,0 +1,158 @@
++Scan-root: /home/hugg/work/Archivist/tests/zip-tar-gz/root
++Scan-host-name: orange
++Scan-os-name: Linux
++Scan-os-arch: i386
++Scan-os-version: 2.6.8-3-386
++Scan-time: Sun, 08 Apr 2007 21:21:52 -0400
++Scan-version: 0.0.1
++Scan-file-separator: /
++Scan-line-separator: \x0a
+--
+Filename: stegparty/test/1.txt
+Size: 49174
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: 8GO501WS6URIv2uPrR04MZCU9IQ=
+Format-text: extended, crlf
+--
+Filename: stegparty/test/2.txt
+Size: 43577
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: T/fzdCUeH/jcw+MFhBn2uL+G93o=
+Format-text: extended, crlf
+--
+Filename: stegparty/test/3.txt
+Size: 64733
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: fuTD45K9i30nh8Fi8mMe8eMyxwY=
+Format-text: ASCII, cr
+--
+Filename: stegparty/test/4.txt
+Size: 60726
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: iSl6pZgItv88K/G0rYYfJk+ku/g=
+Format-text: ASCII, cr
+--
+Filename: stegparty/test/5.txt
+Size: 27282
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: SlkvGyUfck37MK6kjolAmZUo1IY=
+Format-text: ASCII, lf
+--
+Container-type: compressed
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar/stegparty/test/secret
+Hash-SHA1-32k: PkRLab4Xdtnq6+UWndTFreCAz3c=
+Format-text: ASCII, lf
+--
+Filename: stegparty/test/secret
+Size: 63
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: fQZNujtNhHR7pIgB3cCqYBEKNC8=
+Format-mime: application/x-gzip
+--
+Filename: stegparty/LICENSE
+Size: 15145
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: N9NbMdUT10CjCdCRwbWBegJWyjg=
+Format-text: ASCII, lf
+--
+Filename: stegparty/Makefile
+Size: 1264
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: YhvEjkKNfuAcV2rt+2kvSnhZcrs=
+Format-text: ASCII, lf
+--
+Filename: stegparty/README
+Size: 899
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: K4iO5W0FwCVkCaxQrdD00cbs7PY=
+Format-text: ASCII, lf
+--
+Filename: stegparty/base27
+Size: 1616
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: iZtChphMFnV83HlSPd4IpuGo1lE=
+Format-text: ASCII, lf
+--
+Filename: stegparty/base27.1
+Size: 1176
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: vkQSV1yGvhVuqR29cWrXIjyBtrg=
+Format-text: ASCII, lf
+--
+Filename: stegparty/make_steg_lex
+Size: 2218
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: ZY+9lb4saPWr7xMYiA9bn4zGw3k=
+Format-text: ASCII, lf
+--
+Filename: stegparty/stegcommon.c
+Size: 5934
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: t4vI7BAxbYkFwxdSG8v56LBftDg=
+Format-text: ASCII, lf
+--
+Filename: stegparty/stegparty.1
+Size: 7079
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: +ekR+PAh2SMTuvei/hgZsh9m3hM=
+Format-text: ASCII, lf
+--
+Filename: stegparty/stegparty.rulez
+Size: 1331
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: Qco1roQfjPLd2ESANWBAKQm3og8=
+Format-text: ASCII, lf
+--
+Filename: stegparty/stegparty.txt
+Size: 8908
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: D45HcNRjAJ2yRoqH68Gpp1ITzuw=
+Format-text: ASCII, lf
+--
+Filename: stegparty/base27.txt
+Size: 1506
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz/stegparty.tar
+Hash-SHA1-32k: yn4G5AseYGrqmqdeBUP04PK2zOM=
+Format-text: ASCII, lf
+--
+Filename: stegparty.tar
+Container-type: compressed
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip/stegparty.tar.gz
+Hash-SHA1-32k: bG3SbxXh4c1F9DezxzVfTK7NQgo=
+Format-mime: application/x-tar
+--
+Filename: stegparty.tar.gz
+Last-modified: Thu, 05 Apr 2007 19:33:18 -0400
+Size: 105563
+Container-type: archive
+Hash-CRC32: b763b51d
+Compressed-size: 105547
+X-zip-method: 8
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root/stegparty.zip
+Hash-SHA1-32k: 4sIubnY3f1r8bQ89yN149KbO7RU=
+Format-mime: application/x-gzip
+--
+Filename: stegparty.zip
+Container: /home/hugg/work/Archivist/tests/zip-tar-gz/root
+Size: 105711
+Last-modified: Thu, 05 Apr 2007 23:06:00 -0400
+Hash-SHA1-32k: Lfy2+kA19ac9BApxqlnbYDC3Iws=
+--
+--

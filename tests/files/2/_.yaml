@@ -1,0 +1,19 @@
+!entry
+name: _
+children: 
+-  name: file.txt
+   firstScanned: 2008-12-19 08:04:30
+   versions: 
+   -  fileSize: 18
+      digests: 
+      -  checksum: ikFIyMIb0TTga3J4UDXqXIoePFk=
+         type: SHA1
+      lastModified: 2008-12-19 08:04:09
+-  name: folder
+   children: 
+   firstScanned: 2008-12-19 08:04:30
+-  name: MISSING
+   children: 
+   firstScanned: 2008-12-19 08:04:30
+container: true
+firstScanned: 2008-12-19 08:04:30

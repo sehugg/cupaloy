@@ -1,0 +1,822 @@
++Scan-root: /home/hugg/work/Archivist/tests/archives/root
++Scan-host-name: orange
++Scan-os-name: Linux
++Scan-os-arch: i386
++Scan-os-version: 2.6.8-3-386
++Scan-time: Sun, 08 Apr 2007 21:21:32 -0400
++Scan-version: 0.0.1
++Scan-file-separator: /
++Scan-line-separator: \x0a
+--
+Filename: A2IAPSE.VGA
+Container: /home/hugg/work/Archivist/tests/archives/root/apibm206.arj
+Container-type: archive
+Size: 64800
+Compressed-size: 6875
+X-arj-host-os: MS-DOS
+Last-modified: Sun, 22 Nov 1992 20:20:00 -0500
+--
+Filename: A2ISTAFF.VGA
+Container: /home/hugg/work/Archivist/tests/archives/root/apibm206.arj
+Container-type: archive
+Size: 64800
+Compressed-size: 5240
+X-arj-host-os: MS-DOS
+Last-modified: Sun, 22 Nov 1992 20:21:20 -0500
+--
+Filename: A2ITITLE.VGA
+Container: /home/hugg/work/Archivist/tests/archives/root/apibm206.arj
+Container-type: archive
+Size: 64800
+Compressed-size: 6051
+X-arj-host-os: MS-DOS
+Last-modified: Sun, 22 Nov 1992 20:20:38 -0500
+--
+Filename: AP2IBM.EXE
+Container: /home/hugg/work/Archivist/tests/archives/root/apibm206.arj
+Container-type: archive
+Size: 13643
+Compressed-size: 10807
+X-arj-host-os: MS-DOS
+Last-modified: Sun, 22 Nov 1992 21:13:00 -0500
+--
+Filename: AP2IBM.FUT
+Container: /home/hugg/work/Archivist/tests/archives/root/apibm206.arj
+Container-type: archive
+Size: 1207
+Compressed-size: 588
+X-arj-host-os: MS-DOS
+Last-modified: Wed, 11 Nov 1992 21:20:16 -0500
+--
+Filename: AP2IBM.NEW
+Container: /home/hugg/work/Archivist/tests/archives/root/apibm206.arj
+Container-type: archive
+Size: 1759
+Compressed-size: 862
+X-arj-host-os: MS-DOS
+Last-modified: Thu, 12 Nov 1992 09:27:48 -0500
+--
+Filename: AP2IBM.PCK
+Container: /home/hugg/work/Archivist/tests/archives/root/apibm206.arj
+Container-type: archive
+Size: 977
+Compressed-size: 402
+X-arj-host-os: MS-DOS
+Last-modified: Sun, 22 Nov 1992 20:46:38 -0500
+--
+Filename: AP2IBM.REG
+Container: /home/hugg/work/Archivist/tests/archives/root/apibm206.arj
+Container-type: archive
+Size: 2504
+Compressed-size: 802
+X-arj-host-os: MS-DOS
+Last-modified: Sun, 08 Nov 1992 13:10:02 -0500
+--
+Filename: AP2IBM.REV
+Container: /home/hugg/work/Archivist/tests/archives/root/apibm206.arj
+Container-type: archive
+Size: 4889
+Compressed-size: 2092
+X-arj-host-os: MS-DOS
+Last-modified: Sun, 22 Nov 1992 20:37:18 -0500
+--
+Filename: AP2IBM.DOC
+Container: /home/hugg/work/Archivist/tests/archives/root/apibm206.arj
+Container-type: archive
+Size: 14345
+Compressed-size: 5233
+X-arj-host-os: MS-DOS
+Last-modified: Sun, 22 Nov 1992 21:21:32 -0500
+--
+Filename: apibm206.arj
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 40923
+Last-modified: Wed, 23 Aug 2006 20:51:48 -0400
+Hash-SHA1-32k: 8hh0S8ilLIQ7KJ9rg3u4xDyqj/E=
+X-create-date: Fri, 06 Jan 1995 23:24:42 -0500
+X-modify-date: Fri, 06 Jan 1995 23:24:42 -0500
+Format-mime: application/x-arj
+--
+Filename: apibm206.arj
+Size: 40923
+Compressed-size: 40531
+Last-modified: Wed, 23 Aug 2006 08:51:00 -0400
+Hash-CRC16: 5b43
+Container-type: archive
+--
+Filename: arc.arc
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 40562
+Last-modified: Sat, 26 Aug 2006 17:25:41 -0400
+Hash-SHA1-32k: Rh+2uoKR8PNVDBEZ460JYvx0Bp8=
+Format-mime: application/x-arc
+--
+Filename: pad_file.xml
+Last-modified: Tue, 22 Oct 2002 01:53:00 -0400
+Size: 11521
+Container-type: archive
+Hash-CRC32: a725a8f8
+Compressed-size: 3838
+X-zip-method: 8
+Container: /home/hugg/work/Archivist/tests/archives/root/cfighter.zip
+Hash-SHA1-32k: FUrXNyTV5/0MzAcy09YWtBA3/m8=
+Format-text: extended, crlf
+Format-mime: text/xml
+--
+Filename: LIZENZ.TXT
+Last-modified: Tue, 22 Oct 2002 01:53:00 -0400
+Size: 2469
+Container-type: archive
+Hash-CRC32: 9d1f75f3
+Compressed-size: 1195
+X-zip-method: 8
+Container: /home/hugg/work/Archivist/tests/archives/root/cfighter.zip
+Hash-SHA1-32k: 1Goex5N1BNc2My7j4IS4wYwNkqQ=
+Format-text: extended, crlf
+--
+Filename: LIESMICH.TXT
+Last-modified: Tue, 22 Oct 2002 01:53:00 -0400
+Size: 6600
+Container-type: archive
+Hash-CRC32: cc97e16e
+Compressed-size: 2730
+X-zip-method: 8
+Container: /home/hugg/work/Archivist/tests/archives/root/cfighter.zip
+Hash-SHA1-32k: tdt7Obsjq/8bCocPEU94SJBSv14=
+Format-text: extended, crlf
+--
+Filename: LICENSE.TXT
+Last-modified: Tue, 22 Oct 2002 01:53:00 -0400
+Size: 2474
+Container-type: archive
+Hash-CRC32: b334fd7e
+Compressed-size: 1232
+X-zip-method: 8
+Container: /home/hugg/work/Archivist/tests/archives/root/cfighter.zip
+Hash-SHA1-32k: 4AG53Y4PILGRzPlmT94M8KuN1kk=
+Format-text: ASCII, crlf
+--
+Filename: INSTALL.EXE
+Last-modified: Tue, 22 Oct 2002 01:53:00 -0400
+Size: 14896
+Container-type: archive
+Hash-CRC32: d931cc40
+Compressed-size: 8843
+X-zip-method: 8
+Container: /home/hugg/work/Archivist/tests/archives/root/cfighter.zip
+Hash-SHA1-32k: k7F7MwNgWZ19EQV2qyf8Re6cvN8=
+--
+Filename: FILE_ID.DIZ
+Last-modified: Tue, 22 Oct 2002 01:53:00 -0400
+Size: 341
+Container-type: archive
+Hash-CRC32: cb259e90
+Compressed-size: 253
+X-zip-method: 8
+Container: /home/hugg/work/Archivist/tests/archives/root/cfighter.zip
+Hash-SHA1-32k: AN7RMu4iARD9vmAouw/Ft3V/Xto=
+Format-text: ASCII, crlf
+--
+Filename: FILE_ID.049
+Last-modified: Tue, 22 Oct 2002 01:53:00 -0400
+Size: 358
+Container-type: archive
+Hash-CRC32: bc155a9a
+Compressed-size: 268
+X-zip-method: 8
+Container: /home/hugg/work/Archivist/tests/archives/root/cfighter.zip
+Hash-SHA1-32k: PA5zUyruscivcxnqN/feuCsV5tg=
+Format-text: extended, crlf
+--
+Filename: ARCHIV.EXE
+Last-modified: Tue, 22 Oct 2002 01:53:00 -0400
+Size: 868210
+Container-type: archive
+Hash-CRC32: e94696d5
+Compressed-size: 860528
+X-zip-method: 8
+Container: /home/hugg/work/Archivist/tests/archives/root/cfighter.zip
+Hash-SHA1-32k: 7AUktUubzwYSlZS+aMz6XusqOOI=
+--
+Filename: README.TXT
+Last-modified: Tue, 22 Oct 2002 01:53:00 -0400
+Size: 5532
+Container-type: archive
+Hash-CRC32: 87e62d20
+Compressed-size: 2216
+X-zip-method: 8
+Container: /home/hugg/work/Archivist/tests/archives/root/cfighter.zip
+Hash-SHA1-32k: b3GmvzGUvqe8RbKc37A94w4cqoY=
+Format-text: ASCII, crlf
+--
+Filename: cfighter.zip
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 882005
+Last-modified: Sat, 26 Aug 2006 15:57:59 -0400
+Hash-SHA1-32k: GWMeFMa/HAlpbDk26dnpjEHMpBg=
+--
+Filename: Lucas Arts Collection.dmg
+Size: 7077888
+Container-type: archive
+Hash-SHA1-32k: HhRXkiC6mK1qug67Gghr1Zh7ZZE=
+--
+Container-type: compressed
+Container: /home/hugg/work/Archivist/tests/archives/root/lucas.tgz
+Hash-SHA1-32k: BOfhTYLTj9LAX0P1rZ4grTyUd6E=
+Format-mime: application/x-tar
+Error-format: [fl.archivist.TarArchiveExtractor] java.io.IOException: Stream buffer overflow
+--
+Filename: lucas.tgz
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 6654738
+Last-modified: Mon, 28 Aug 2006 22:34:13 -0400
+Hash-SHA1-32k: zvPMGm6kXYkrAUemIUoxw4D67xk=
+Format-mime: application/x-gzip
+--
+Filename: rabinpoly-1.0/README
+Size: 1196
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: CH2zJSFD3o0XCpPOssbcwEX+ULA=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/AUTHORS
+Size: 13
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: sQ7Os/TMYWyVOjprZ1n3PCvEFG0=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/COPYING
+Size: 17992
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: 36wZmnU5pARAcJiiVBuUgiefaQ0=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/ChangeLog
+Size: 0
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+--
+Filename: rabinpoly-1.0/INSTALL
+Size: 9236
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: RzRq2uqYfC9WXfrcFapgx+WfAIc=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/Makefile.am
+Size: 294
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: Bmq9I0Rz6SZAMbJJlAH7cBkJNcc=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/Makefile.in
+Size: 13936
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: wLS/xLa87jv5U+cY8vfW0hm7P6o=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/NEWS
+Size: 0
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+--
+Filename: rabinpoly-1.0/aclocal.m4
+Size: 151159
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: hnzfBDRQsexyoZRtDShXx4k4IMs=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/config.guess
+Size: 41134
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: xfGHYghSVfnHhVkP4oA9dsyYA04=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/config.h.in
+Size: 1774
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: kptVhZ6GAhYphYkFv/mDUbTStOU=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/config.sub
+Size: 29708
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: /ccYLa2RZzrCY0YuEeLFUOh0RbQ=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/configure
+Size: 311810
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: 40eljvef3t40Vcn80AytVXdLkZM=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/configure.ac
+Size: 675
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: PTVeeloQyAYNvDzDdUk7oSmFb+k=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/depcomp
+Size: 12123
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: VG3jMucnW05lykrg6M4SuhGz/2g=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/install-sh
+Size: 5569
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: EYx0btQNU5cuzh1Q65oF2nM6wNw=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/ltmain.sh
+Size: 143988
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: HIBdmWxwzaB+A/QeKIQGr8w7S90=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/missing
+Size: 10270
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: ODDPiRSKE29M2xvAwy8KI1sbJLw=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/mkinstalldirs
+Size: 1801
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: dzWo+AdmPBRk52c4a0GykxWHI8E=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/rabinpoly.h
+Size: 2134
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: ygLcnjUglf/0vgAOhSzX+LH9VTo=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/msb.h
+Size: 2712
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: A7NBGMvnPdGbT+/Cp8fXexk8bZs=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/Makefile.am
+Size: 581
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: 13SmpAi/krMVBfhYOfGRajBPYxY=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/Makefile.in
+Size: 11711
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: jLH1ZPLjnW4cQGcCzrnBlzUDg3I=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/rabinpoly.C
+Size: 4982
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: OJ88YfC8P75Djzw079ZIHyRBjtU=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/msb.C
+Size: 2497
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz/rabinpoly-1.0.tar
+Hash-SHA1-32k: JqwuTEQTuGCpLEY/yybe2si9XYE=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0.tar
+Container-type: compressed
+Container: /home/hugg/work/Archivist/tests/archives/root/rabinpoly-1.0.tar.gz
+Hash-SHA1-32k: hiV3zRmz4yc5ltde3Y9o88lZHsA=
+Format-mime: application/x-tar
+--
+Filename: rabinpoly-1.0.tar.gz
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 193517
+Last-modified: Sat, 26 Aug 2006 12:59:27 -0400
+Hash-SHA1-32k: ZhCEAys3mjuBDn7fCHONtcPTeLY=
+Format-mime: application/x-gzip
+--
+Filename: rabinpoly-1.0/README
+Size: 1196
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: CH2zJSFD3o0XCpPOssbcwEX+ULA=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/AUTHORS
+Size: 13
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: sQ7Os/TMYWyVOjprZ1n3PCvEFG0=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/COPYING
+Size: 17992
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: 36wZmnU5pARAcJiiVBuUgiefaQ0=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/ChangeLog
+Size: 0
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+--
+Filename: rabinpoly-1.0/INSTALL
+Size: 9236
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: RzRq2uqYfC9WXfrcFapgx+WfAIc=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/Makefile.am
+Size: 294
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: Bmq9I0Rz6SZAMbJJlAH7cBkJNcc=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/Makefile.in
+Size: 13936
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: wLS/xLa87jv5U+cY8vfW0hm7P6o=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/NEWS
+Size: 0
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+--
+Filename: rabinpoly-1.0/aclocal.m4
+Size: 151159
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: hnzfBDRQsexyoZRtDShXx4k4IMs=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/config.guess
+Size: 41134
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: xfGHYghSVfnHhVkP4oA9dsyYA04=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/config.h.in
+Size: 1774
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: kptVhZ6GAhYphYkFv/mDUbTStOU=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/config.sub
+Size: 29708
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: /ccYLa2RZzrCY0YuEeLFUOh0RbQ=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/configure
+Size: 311810
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: 40eljvef3t40Vcn80AytVXdLkZM=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/configure.ac
+Size: 675
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: PTVeeloQyAYNvDzDdUk7oSmFb+k=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/depcomp
+Size: 12123
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: VG3jMucnW05lykrg6M4SuhGz/2g=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/install-sh
+Size: 5569
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: EYx0btQNU5cuzh1Q65oF2nM6wNw=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/ltmain.sh
+Size: 143988
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: HIBdmWxwzaB+A/QeKIQGr8w7S90=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/missing
+Size: 10270
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: ODDPiRSKE29M2xvAwy8KI1sbJLw=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/mkinstalldirs
+Size: 1801
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: dzWo+AdmPBRk52c4a0GykxWHI8E=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/rabinpoly.h
+Size: 2134
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: ygLcnjUglf/0vgAOhSzX+LH9VTo=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/msb.h
+Size: 2712
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: A7NBGMvnPdGbT+/Cp8fXexk8bZs=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/Makefile.am
+Size: 581
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: 13SmpAi/krMVBfhYOfGRajBPYxY=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/Makefile.in
+Size: 11711
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: jLH1ZPLjnW4cQGcCzrnBlzUDg3I=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/rabinpoly.C
+Size: 4982
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: OJ88YfC8P75Djzw079ZIHyRBjtU=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/msb.C
+Size: 2497
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tar
+Hash-SHA1-32k: JqwuTEQTuGCpLEY/yybe2si9XYE=
+Format-text: ASCII, lf
+--
+Filename: rabin.tar
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 808960
+Last-modified: Sat, 26 Aug 2006 14:11:36 -0400
+Hash-SHA1-32k: hiV3zRmz4yc5ltde3Y9o88lZHsA=
+Format-mime: application/x-tar
+--
+Filename: rabinpoly-1.0/README
+Size: 1196
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: CH2zJSFD3o0XCpPOssbcwEX+ULA=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/AUTHORS
+Size: 13
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: sQ7Os/TMYWyVOjprZ1n3PCvEFG0=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/COPYING
+Size: 17992
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: 36wZmnU5pARAcJiiVBuUgiefaQ0=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/ChangeLog
+Size: 0
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+--
+Filename: rabinpoly-1.0/INSTALL
+Size: 9236
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: RzRq2uqYfC9WXfrcFapgx+WfAIc=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/Makefile.am
+Size: 294
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: Bmq9I0Rz6SZAMbJJlAH7cBkJNcc=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/Makefile.in
+Size: 13936
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: wLS/xLa87jv5U+cY8vfW0hm7P6o=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/NEWS
+Size: 0
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+--
+Filename: rabinpoly-1.0/aclocal.m4
+Size: 151159
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: hnzfBDRQsexyoZRtDShXx4k4IMs=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/config.guess
+Size: 41134
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: xfGHYghSVfnHhVkP4oA9dsyYA04=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/config.h.in
+Size: 1774
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: kptVhZ6GAhYphYkFv/mDUbTStOU=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/config.sub
+Size: 29708
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: /ccYLa2RZzrCY0YuEeLFUOh0RbQ=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/configure
+Size: 311810
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: 40eljvef3t40Vcn80AytVXdLkZM=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/configure.ac
+Size: 675
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: PTVeeloQyAYNvDzDdUk7oSmFb+k=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/depcomp
+Size: 12123
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: VG3jMucnW05lykrg6M4SuhGz/2g=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/install-sh
+Size: 5569
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: EYx0btQNU5cuzh1Q65oF2nM6wNw=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/ltmain.sh
+Size: 143988
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: HIBdmWxwzaB+A/QeKIQGr8w7S90=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/missing
+Size: 10270
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: ODDPiRSKE29M2xvAwy8KI1sbJLw=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/mkinstalldirs
+Size: 1801
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: dzWo+AdmPBRk52c4a0GykxWHI8E=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/rabinpoly.h
+Size: 2134
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: ygLcnjUglf/0vgAOhSzX+LH9VTo=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/msb.h
+Size: 2712
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: A7NBGMvnPdGbT+/Cp8fXexk8bZs=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/Makefile.am
+Size: 581
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: 13SmpAi/krMVBfhYOfGRajBPYxY=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/Makefile.in
+Size: 11711
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: jLH1ZPLjnW4cQGcCzrnBlzUDg3I=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/rabinpoly.C
+Size: 4982
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: OJ88YfC8P75Djzw079ZIHyRBjtU=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0/src/msb.C
+Size: 2497
+Container-type: archive
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz/rabinpoly-1.0.tar
+Hash-SHA1-32k: JqwuTEQTuGCpLEY/yybe2si9XYE=
+Format-text: ASCII, lf
+--
+Filename: rabinpoly-1.0.tar
+Container-type: compressed
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2//home/hugg/work/Archivist/tests/archives/root/rabin.tgz
+Hash-SHA1-32k: hiV3zRmz4yc5ltde3Y9o88lZHsA=
+Format-mime: application/x-tar
+--
+Filename: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz
+Last-modified: Sat, 26 Aug 2006 17:21:09 -0400
+Container-type: compressed
+Container: /home/hugg/work/Archivist/tests/archives/root/rabin.tgz.bz2
+Hash-SHA1-32k: ZhCEAys3mjuBDn7fCHONtcPTeLY=
+Format-mime: application/x-gzip
+--
+Filename: rabin.tgz.bz2
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 194701
+Last-modified: Sat, 26 Aug 2006 17:21:09 -0400
+Hash-SHA1-32k: GepUks/g4Y4cZ0AQqVzI4i+LF40=
+Format-mime: application/x-bzip2
+--
+Filename: rar.rar
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 40043
+Last-modified: Sat, 26 Aug 2006 17:50:22 -0400
+Hash-SHA1-32k: kzm7rmLen5nQfH76+3ncPYAa6MA=
+--
+Filename: store.xml
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 2518
+Last-modified: Sun, 01 May 2005 01:32:09 -0400
+Hash-SHA1-32k: Fnd8MgAcyirqhzrAfY4I7AdqPDI=
+Format-text: ASCII, crlf
+Format-mime: text/xml
+--
+Filename: synchronize.lha
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 43819
+Last-modified: Sun, 20 Jun 1999 19:00:00 -0400
+Hash-SHA1-32k: u1iM7d/Vys+h+6SfoWq2MVjp3sA=
+--
+Filename: -1   arc.arc
+Size: 40562
+Compressed-size: 40562
+Last-modified: Sat, 26 Aug 2006 17:25:40 -0400
+Container-type: archive
+--
+Filename: zoo.zoo
+Container: /home/hugg/work/Archivist/tests/archives/root
+Size: 40731
+Last-modified: Sat, 26 Aug 2006 17:25:40 -0400
+Hash-SHA1-32k: D0BIg2ve3HTSSvBYxc0KceL67Ds=
+Format-mime: application/x-zoo
+--
+--

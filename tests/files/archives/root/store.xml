@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:output method="html" encoding="iso-8859-1"/>
+<xsl:template match="/"> 
+<!--Add XSL HERE-->
+
+ <html>
+<body topmargin="0" leftmargin="0" text="black">
+<xsl:if test="count(ProductInfo/Details) != 0">
+
+<table border="1" cellspacing="0" cellpadding="0">
+<tr>
+<td>
+<table border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td>
+<img src="http://rcm-images.amazon.com/images/G/01/rcm/468x60_banner.gif" width="468" height="60" border="0" />
+</td></tr>
+<tr>
+<td>
+
+<table width="466" cellpadding="0" cellspacing="0" border="0" >
+
+<tr>
+<xsl:for-each select="ProductInfo/Details">
+<xsl:if test="position() &lt; 4">
+<xsl:call-template name="Cell"/>
+</xsl:if>
+</xsl:for-each>
+</tr>
+
+<tr height="5"><td colspan="6" height="5"></td></tr>
+
+<tr>
+<xsl:for-each select="ProductInfo/Details">
+<xsl:if test="position() &gt; 3 and position() &lt; 7">
+<xsl:call-template name="Cell"/>
+</xsl:if>
+</xsl:for-each>
+</tr>
+
+<tr height="5"><td colspan="6" height="5"></td></tr>
+
+<tr>
+<xsl:for-each select="ProductInfo/Details">
+<xsl:if test="position() &gt; 6 and position() &lt; 10">
+<xsl:call-template name="Cell"/>
+</xsl:if>
+</xsl:for-each>
+</tr>
+
+
+</table>
+
+
+<tr>
+<td align="center">
+<font face="Arial" size="-2" color="#A1A1A1">(Prices May Change)</font><br/>
+<a href="http://rcm.amazon.com/e/cm/privacy-policy.html?o=1" target="_top">
+<font face="Arial" size="-2" color="#A1A1A1">Privacy Information</font></a>
+</td>
+</tr>
+
+</td></tr></table></td></tr></table>
+
+</xsl:if>
+</body>
+</html>
+
+
+<!--End of XSL-->
+</xsl:template>
+
+<xsl:template name="Cell">
+<xsl:variable name="title" select="translate(ProductName,'()-','(')"/>
+<xsl:variable name="title2">
+<xsl:choose>
+<xsl:when test="substring-before($title,'(') = ''">
+<xsl:value-of select="$title"/>
+</xsl:when>
+<xsl:otherwise><xsl:value-of select="substring-before($title,'(')"/></xsl:otherwise>
+</xsl:choose>
+</xsl:variable>
+<td height="85">
+<a href="{@url}" target="_top"><img src="{ImageUrlSmall}" border="0"  vspace="2" hspace="2" alt="Click For More Info At Amazon"/></a> 
+</td>
+<td>
+<a href="{@url}" target="_top"><font face="Arial" size="-2" color="#3366FF"><xsl:value-of select="substring($title2,1,60)" disable-output-escaping="yes" /></font></a>
+<br/>
+<font face="Arial" size="-2" color="#990000">
+<xsl:value-of select="OurPrice"/></font>
+</td>
+</xsl:template>
+
+</xsl:stylesheet>
+
