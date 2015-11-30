@@ -109,3 +109,6 @@ what if file path changes?
 how to retire a collection/location?
 what char. set for archives?
 https://docs.python.org/2/library/argparse.html#module-argparse
+http://stackoverflow.com/questions/10410180/sqlite-view-across-multiple-databases
+what if one location has real files and other in archives?
+

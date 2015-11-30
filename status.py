@@ -4,8 +4,8 @@ import os,os.path,sys,uuid,sqlite3,math
 import tabulate
 from common import *
 
-def pct(n,d,dups):
-  if dups<2:
+def pct(n,d,dups=None):
+  if dups==1:
     return ''
   elif n==None or not d:
     return '-'
@@ -31,17 +31,24 @@ def run(args, keywords):
     FROM files
     GROUP BY collidx,path,name
   """)
+  mergedb.execute("""
+  CREATE TABLE stats AS
+    SELECT
+      collidx,dups,locs,
+      COUNT(*) as nfiles,
+      SUM(maxsize) as totsize,
+      SUM(minsize=maxsize) as samesize,
+      SUM(mintime=maxtime) as sametime,
+      SUM(minhash=maxhash) as samehash,
+      SUM(nerrors) as nerrors
+    FROM dupfiles
+    GROUP BY collidx,dups,locs
+  """)
   results = mergedb.execute("""
-  SELECT
-    collidx,dups,locs,
-    COUNT(*) as nfiles,
-    SUM(maxsize) as totsize,
-    SUM(minsize=maxsize) as samesize,
-    SUM(mintime=maxtime) as sametime,
-    SUM(minhash=maxhash) as samehash,
-    SUM(nerrors) as nerrors
-  FROM dupfiles
-  GROUP BY collidx,dups,locs
+  SELECT s.*, t.ncollfiles, t.totcollsize
+  FROM stats s
+  JOIN (SELECT collidx,COUNT(*) as ncollfiles,SUM(totsize) as totcollsize FROM stats GROUP BY collidx) t ON s.collidx=t.collidx
+  ORDER BY collidx,dups,locs
   """).fetchall()
   table = [
     (
@@ -50,14 +57,15 @@ def run(args, keywords):
       locs,
       nfiles,
       '%10.2f' % (totsize/(1000.0*1000.0)),
+      pct(totsize,totcollsize),
       pct(samesize,nfiles,dups),
       pct(samehash,nfiles,dups),
       pct(sametime,nfiles,dups),
       pct(nerrors,nfiles,dups)
     )
-    for collidx,dups,locs,nfiles,totsize,samesize,sametime,samehash,nerrors in results
+    for collidx,dups,locs,nfiles,totsize,samesize,sametime,samehash,nerrors,ncollfiles,totcollsize in results
   ]
-  headers = ["Collection","# Copies","Locations","# Files","Total MB","=Size","=Hash","=Time","Errors"]
+  headers = ["Collection","# Copies","Locations","# Files","Total MB","% Covered","=Size","=Hash","=Time","Errors"]
   print
   print tabulate.tabulate(table, headers=headers)
 
