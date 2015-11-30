@@ -19,4 +19,6 @@ def run(args, keywords):
   GROUP BY uuid
   """)
   headers = ["Collection","Last Scan","Total MB","# Files","Oldest","Newest"]
+  print
   print tabulate.tabulate(results.fetchall(), headers=headers)
+  print

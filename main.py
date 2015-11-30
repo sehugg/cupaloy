@@ -43,7 +43,7 @@ def runCommand(argv):
     --name <name> [--uuid uuid] init [directory]
     [--force] [--rescan] [--omithash] scan [collection...]
     [--host <name>] list
-    status
+    status [collection...]
     dups
     [--name <name>] [--uuid <uuid>] rename [collection]
     retire [collection]

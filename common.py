@@ -16,7 +16,7 @@ sessionStartTime = long(time.time())
 METADIR='.cupaloy'
 GLOBALDBFILE='hosts/%s.db'
 
-EXCLUDES=['.cupaloy','*~','.DS_Store','._*','.~lock.*','.Spotlight*']
+EXCLUDES=['.cupaloy','*~','.DS_Store','._*','.~lock.*','.Spotlight*',u'Icon\uf00d','Icon\r','fseventsd-uuid']
 
 verbose = 0
 
@@ -85,18 +85,25 @@ def getAllHostDBFiles():
 def getAllCollectionUUIDs():
   return os.listdir(os.path.join(getHomeMetaDir(), "collections"))
 
-def getAllCollectionLocations():
-  clocs = {}
+def getAllCollectionLocations(args):
+  result = {}
+  allurls = set()
   # find all collection locations
   for dbfn in getAllHostDBFiles():
     db = openGlobalDatabase(os.path.join(getHomeMetaDir(), 'hosts', dbfn))
-    for cl in getCollectionLocationsFromDB(db):
-      try:
-        clocs[cl.collection.uuid].append(cl)
-      except KeyError:
-        clocs[cl.collection.uuid] = [cl]
+    if not args:
+      args = [''] # TODO: not the fastest way
+    for arg in args:
+      clocs = parseCollectionLocations(db, arg)
+      for cl in clocs:
+        if not cl.url in allurls:
+          try:
+            result[cl.collection.uuid].append(cl)
+          except KeyError:
+            result[cl.collection.uuid] = [cl]
+          allurls.add(cl.url)
     db.close()
-  return clocs
+  return result
 
 def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
   # insert into merged db
@@ -280,7 +287,7 @@ Find matching collections from a directory path, URL or (partial) name.
 """
 def parseCollectionLocations(globaldb, arg, create=False):
   # if it's a directory, return it
-  if os.path.isdir(arg):
+  if len(arg)>0 and os.path.isdir(arg):
     return [ loadCollectionLocation(arg, create) ]
   # match the string against recently scanned collections
   # TODO: match with config file?

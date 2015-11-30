@@ -15,9 +15,14 @@ def pct(n,d,dups=None):
     return "%5.1f%%" % (math.floor(n*1000.0/d)/10.0)
 
 def run(args, keywords):
-  clocs = getAllCollectionLocations()
+    
+  clocs = getAllCollectionLocations(args)
   mergedb = getMergedFileDatabase(clocs)
   uuids = clocs.keys()
+  if len(uuids)==0:
+    print "No collections specified."
+    return False
+    
   mergedb.execute("""
   CREATE TABLE dupfiles AS
     SELECT COUNT(*) as dups,collidx,GROUP_CONCAT(locidx) as locs,path,name,
@@ -68,7 +73,18 @@ def run(args, keywords):
   headers = ["Collection","# Copies","Locations","# Files","Total MB","% Covered","=Size","=Hash","=Time","Errors"]
   print
   print tabulate.tabulate(table, headers=headers)
+  print
 
+  if 0:
+    for row in mergedb.execute("""
+      SELECT COUNT(*),dups,collidx,locs,path,name,SUM(minsize),SUM(maxsize)
+      FROM dupfiles
+      WHERE dups=1
+      GROUP BY collidx,locs,path
+      ORDER BY collidx,locs,path
+    """):
+      if isIncluded(row[4]) and isIncluded(row[5]):
+        print row
   if 0:
     for row in mergedb.execute("SELECT dups,collidx,locs,path,name,minsize,maxsize,mintime,maxtime FROM dupfiles WHERE dups=1 ORDER BY collidx,locs,path,name"):
       if isIncluded(row[3]) and isIncluded(row[4]):

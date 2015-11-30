@@ -15,9 +15,13 @@ def pct(n,d,dups):
     return "%5.1f%%" % (math.floor(n*1000.0/d)/10.0)
 
 def run(args, keywords):
-  clocs = getAllCollectionLocations()
+  clocs = getAllCollectionLocations(args)
   mergedb = getMergedFileDatabase(clocs, include_virtual=True)
   uuids = clocs.keys()
+  if len(uuids)==0:
+    print "No collections specified."
+    return False
+    
   mergedb.execute("""
   CREATE TABLE dupfiles AS
     SELECT 
@@ -58,6 +62,7 @@ def run(args, keywords):
   headers = ["Colls","Locs","# Dups","# Files","Size MB","Sample Filename"]
   print
   print tabulate.tabulate(table, headers=headers)
+  print
 
   if 0:
     for row in mergedb.execute("SELECT dups,collidx,locs,path,name,minsize,maxsize,mintime,maxtime FROM dupfiles WHERE dups=1 ORDER BY collidx,locs,path,name"):
