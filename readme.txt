@@ -113,3 +113,5 @@ http://stackoverflow.com/questions/10410180/sqlite-view-across-multiple-database
 what if one location has real files and other in archives?
 clear memory db after every op?
 filter by collection and file name/metadata
+warn/ignore if file has wrong extension (.zip)
+estimate progress from last scan

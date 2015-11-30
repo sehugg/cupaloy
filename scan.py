@@ -7,6 +7,7 @@ import libarchive
 import hashlib
 from common import *
 from scanner_file import *
+from progress import ProgressTracker
 
 # logging
 import logging
@@ -164,9 +165,10 @@ def run(args, keywords):
   for arg in args:
     cloc = parseCollectionLocation(globaldb, arg, create=force)
     print "Scanning %s" % (str(cloc))
+    progress = ProgressTracker()
     filesdb = openFileDatabase(cloc.getFileDatabasePath(), create=True)
     scanres = ScanResults(cloc)
-    scanner = FileScanner(cloc.url)
+    scanner = FileScanner(cloc.url, progress)
     for scanfile in scanner.scan():
       processScanFile(scanfile)
       filesdb.commit()
