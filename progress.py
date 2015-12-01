@@ -32,7 +32,6 @@ class ProgressTracker:
     self.count = count
     self.dirs_visited += 1
     self.current_name = name
-    self.refresh()
   
   def inc(self, name, dsize=None):
     self.count += 1

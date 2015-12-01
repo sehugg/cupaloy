@@ -13,7 +13,7 @@ def runCommand(argv):
   keywords = {}
   
   try:
-    opts, args = getopt.getopt(argv,"vn:h:fourA",["verbose","name=","host=","force=","omithash","uuid=","rescan","archives"])
+    opts, args = getopt.getopt(argv,"vn:h:fourAl",["verbose","name=","host=","force=","omithash","uuid=","rescan","archives","list"])
     for opt, arg in opts:
       if opt in ('-v','--verbose'):
         verbose += 1
@@ -31,6 +31,8 @@ def runCommand(argv):
         keywords['uuid'] = str(uuid.UUID(arg))
       elif opt in ('-A','--archives'):
         keywords['archives'] = 1
+      elif opt in ('-l','--list'):
+        keywords['list'] = 1
     for arg in args:
       if arg in COMMANDS:
         commandsToRun.append(arg)
@@ -45,8 +47,8 @@ def runCommand(argv):
     --name <name> [--uuid uuid] init [directory]
     [--force] [--rescan] [--omithash] scan [collection...]
     [--host <name>] list
-    status [collection...]
-    dups
+    [--archives] status [collection...]
+    [--archives] dups
     [--name <name>] [--uuid <uuid>] rename [collection]
     retire [collection]
   """

@@ -77,6 +77,23 @@ def run(args, keywords):
   print tabulate.tabulate(table, headers=headers)
   print
 
+  if 'list' in keywords:
+    lastpath = ''
+    for row in mergedb.execute("""
+      SELECT
+        path,name,
+        SUM(dups),
+        GROUP_CONCAT(collidx),
+        locs,SUM(minsize),SUM(maxsize)
+      FROM dupfiles
+      GROUP BY path,name
+      ORDER BY path,name
+    """):
+      if isIncluded(row[0]) and isIncluded(row[1]):
+        if lastpath != row[0]:
+          print row[0]
+          lastpath = row[0]
+        print "%40s %5d %10s %10s %10d %10d" % row[1:]
   if 0:
     for row in mergedb.execute("""
       SELECT COUNT(*),dups,collidx,locs,path,name,SUM(minsize),SUM(maxsize)

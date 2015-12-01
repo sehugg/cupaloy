@@ -116,3 +116,5 @@ filter by collection and file name/metadata
 warn/ignore if file has wrong extension (.zip)
 estimate progress from last scan
 real/virtual duplicate checking combinations
+progress for scanning inside archives
+4 GB zip files?
