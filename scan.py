@@ -7,6 +7,8 @@ import libarchive
 import hashlib
 from common import *
 from scanner_file import *
+from progress import ProgressTracker
+from contextlib import closing
 
 # logging
 import logging
@@ -20,7 +22,7 @@ logger.addHandler(ch)
 
 ###
 
-EXTS_TAR = ('.tar','.tgz','.tbz2','.tar.gz','.tar.bz2')
+EXTS_TAR = ('.tar','.tgz','.tbz2','.tar.gz','.tar.bz2','tar.z')
 EXTS_ZIP = ('.zip')
 EXTS_ISO9660 = ('.iso','.iso9660')
 EXTS_ARCHIVE = (
@@ -90,12 +92,18 @@ def addFileEntry(db, scanfile, containerid=None):
     updateHash(db, fileid, scanfile)
     return fileid
 
+class TarScanFile(ScanFile):
+  def getFileHandle(self):
+    return closing(self.tarfile.extractfile(self.tarinfo))
+
 def processTarFile(arcfile, containerid=None):
   with arcfile.getFileHandle() as f:
-    with tarfile.open(f, 'r') as tarf:
+    with tarfile.open(fileobj=f, mode='r') as tarf:
       for info in tarf:
         if info.isfile():
-          sf = ScanFile(joinPaths(arcfile.key, parseUnicode(info.name)), info.size, info.mtime)
+          sf = TarScanFile(joinPaths(arcfile.key, parseUnicode(info.name)), info.size, info.mtime)
+          sf.tarfile = tarf
+          sf.tarinfo = info
           addFileEntry(filesdb, sf, containerid=containerid)
 
 class ZipScanFile(ScanFile):
@@ -128,15 +136,18 @@ def processScanFile(scanfile):
   if (rescan or wasmodified) and hasattr(scanfile, 'getFileHandle'):
     fileid = fileinfo if wasmodified else fileinfo[0]
     try:
-      fn = scanfile.key
+      fn = scanfile.key.lower()
       compressed = False
-      if fn.endswith(EXTS_COMPRESS):
-        fn = os.path.splitext(fn)[0]
-        compressed = True
-      if fn.endswith(EXTS_ZIP) and not compressed:
-        processZipFile(scanfile, containerid=fileid)
-      elif fn.endswith(EXTS_ARCHIVE):
-        processArchive(scanfile, containerid=fileid)
+      if fn.endswith(EXTS_TAR):
+        processTarFile(scanfile, containerid=fileid)
+      else:
+        if fn.endswith(EXTS_COMPRESS):
+          fn = os.path.splitext(fn)[0]
+          compressed = True
+        if fn.endswith(EXTS_ZIP) and not compressed:
+          processZipFile(scanfile, containerid=fileid)
+        elif fn.endswith(EXTS_ARCHIVE):
+          processArchive(scanfile, containerid=fileid)
     except KeyboardInterrupt:
       filesdb.rollback()
       raise
@@ -165,9 +176,10 @@ def run(args, keywords):
   for arg in args:
     cloc = parseCollectionLocation(globaldb, arg, create=force)
     print "Scanning %s" % (str(cloc))
+    progress = ProgressTracker()
     filesdb = openFileDatabase(cloc.getFileDatabasePath(), create=True)
     scanres = ScanResults(cloc)
-    scanner = FileScanner(cloc.url)
+    scanner = FileScanner(cloc.url, progress)
     for scanfile in scanner.scan():
       processScanFile(scanfile)
       filesdb.commit()

@@ -114,3 +114,8 @@ what if one location has real files and other in archives?
 clear memory db after every op?
 filter by collection and file name/metadata
 reject dups that are on same media
+warn/ignore if file has wrong extension (.zip)
+estimate progress from last scan
+real/virtual duplicate checking combinations
+progress for scanning inside archives
+4 GB zip files?

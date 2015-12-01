@@ -17,7 +17,7 @@ def pct(n,d,dups=None):
 def run(args, keywords):
     
   clocs = getAllCollectionLocations(args)
-  mergedb = getMergedFileDatabase(clocs)
+  mergedb = getMergedFileDatabase(clocs, include_virtual=('archives' in keywords))
   uuids = clocs.keys()
   if len(uuids)==0:
     print "No collections specified."
@@ -25,7 +25,9 @@ def run(args, keywords):
     
   mergedb.execute("""
   CREATE TABLE dupfiles AS
-    SELECT COUNT(*) as dups,collidx,GROUP_CONCAT(locidx) as locs,path,name,
+    SELECT COUNT(*) as dups,collidx,
+      GROUP_CONCAT(case when is_real then locidx else '['||locidx||']' end) as locs,
+      path,name,
       MIN(IFNULL(size,-1)) as minsize,
       MAX(IFNULL(size,0)) as maxsize,
       MIN(IFNULL(modtime,-1)) as mintime,
@@ -75,6 +77,23 @@ def run(args, keywords):
   print tabulate.tabulate(table, headers=headers)
   print
 
+  if 'list' in keywords:
+    lastpath = ''
+    for row in mergedb.execute("""
+      SELECT
+        path,name,
+        SUM(dups),
+        GROUP_CONCAT(collidx),
+        locs,SUM(minsize),SUM(maxsize)
+      FROM dupfiles
+      GROUP BY path,name
+      ORDER BY path,name
+    """):
+      if isIncluded(row[0]) and isIncluded(row[1]):
+        if lastpath != row[0]:
+          print row[0]
+          lastpath = row[0]
+        print "%40s %5d %10s %10s %10d %10d" % row[1:]
   if 0:
     for row in mergedb.execute("""
       SELECT COUNT(*),dups,collidx,locs,path,name,SUM(minsize),SUM(maxsize)
