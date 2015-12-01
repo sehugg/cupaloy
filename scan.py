@@ -65,11 +65,11 @@ def computeHash(scanfile, hashfn):
       return computeHashOfFile(f, hashfn)
 
 def updateHash(db, fileid, scanfile):
-  hashes = computeHash(scanfile, [hashlib.md5(), hashlib.sha512()])
+  hashes = computeHash(scanfile, [hashlib.sha512()])
   if hashes:
-    hash_md5,hash_sha512 = hashes
-    # TODO: sha512
-    db.execute("UPDATE files SET hash_md5=? WHERE id=?", [buffer(hash_md5), fileid])
+    hash1 = hashes[0][0:16]
+    hash2 = hashes[0][16:]
+    db.execute("UPDATE files SET hash1=?,hash2=? WHERE id=?", [buffer(hash1), buffer(hash2), fileid])
 
 def addFileEntry(db, scanfile, containerid=None):
   path = scanfile.key
@@ -80,7 +80,7 @@ def addFileEntry(db, scanfile, containerid=None):
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(db, folderpath, fileid=containerid)
   cur = db.cursor()
-  fileinfo = not rescan and cur.execute("SELECT id,size,modtime,hash_md5 FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND errors IS NULL", [folderid, filename, size, mtime]).fetchone()
+  fileinfo = not rescan and cur.execute("SELECT id,size,modtime,hash1 FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND errors IS NULL", [folderid, filename, size, mtime]).fetchone()
   if fileinfo:
     if not fileinfo[3]: #TODO?
       updateHash(db, fileinfo[0], scanfile)

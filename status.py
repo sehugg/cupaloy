@@ -32,8 +32,8 @@ def run(args, keywords):
       MAX(IFNULL(size,0)) as maxsize,
       MIN(IFNULL(modtime,-1)) as mintime,
       MAX(IFNULL(modtime,0)) as maxtime,
-      MIN(IFNULL(hash_md5,'')) as minhash,
-      MAX(IFNULL(hash_md5,'-')) as maxhash,
+      MIN(IFNULL(hash2,'')) as minhash,
+      MAX(IFNULL(hash2,'-')) as maxhash,
       SUM(has_errors) as nerrors
     FROM files
     GROUP BY collidx,path,name

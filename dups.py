@@ -34,8 +34,8 @@ def run(args, keywords):
       size,
       SUM(is_real) as nreal
     FROM files
-    WHERE size > 0 AND hash_md5 IS NOT NULL
-    GROUP BY hash_md5
+    WHERE size > 0 AND hash1 IS NOT NULL
+    GROUP BY hash1,hash2
   """)
   results = mergedb.execute("""
   SELECT

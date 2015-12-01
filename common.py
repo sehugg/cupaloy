@@ -116,7 +116,8 @@ def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
     name TEXT,
     size LONG,
     modtime LONG,
-    hash_md5 BINARY,
+    hash1 BINARY,
+    hash2 BINARY,
     is_real BOOL,
     has_errors BOOL
   )
@@ -142,7 +143,7 @@ def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
         # add only real files
         mergedb.execute("""
         INSERT INTO files
-        SELECT ?,?,path,name,size,modtime,hash_md5,file_id IS NULL AS is_real,errors IS NOT NULL AS has_errors
+        SELECT ?,?,path,name,size,modtime,hash1,hash2,file_id IS NULL AS is_real,errors IS NOT NULL AS has_errors
           FROM db.files f
           JOIN db.folders p ON p.id=f.folder_id
          WHERE is_real IN (%s)
@@ -478,10 +479,9 @@ def openFileDatabase(filepath, create=False):
       modtime LONG,
       lastseentime LONG,
       errors TEXT,
-      hash_md5 BINARY
+      hash1 BINARY,
+      hash2 BINARY
     )
-    ""","""
-    --ALTER TABLE files ADD COLUMN hash_md5 BINARY
     ""","""
     CREATE UNIQUE INDEX IF NOT EXISTS files_idx ON files(name,folder_id)
     """]
