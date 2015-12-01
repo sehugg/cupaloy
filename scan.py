@@ -37,16 +37,18 @@ filesdb = None
 force = False
 rescan = False
 compute_hashes = True
+use_longer_hash = False # TODO: option
 
 def computeHashOfFile(f, digests, bufsize=0x1000):
   """
   >>> import binascii
-  >>> binascii.hexlify(computeHashOfFile(open('tests/files/root/emptyfile.txt','r'), [hashlib.md5()])[0])
-  'd41d8cd98f00b204e9800998ecf8427e'
+  >>> computeHashOfFile(open('tests/files/root/emptyfile.txt','r'), [hashlib.md5()])
   >>> binascii.hexlify(computeHashOfFile(open('tests/files/archives/root/rabin.tgz.bz2','r'), [hashlib.md5()])[0])
   '704ca9f2a35f52960f4f94926991241b'
   """
   arr = f.read(bufsize)
+  if len(arr)==0:
+    return None # empty file, no hash
   while arr:
     for m in digests:
       m.update(arr)
@@ -67,10 +69,13 @@ def computeHash(scanfile, hashfn):
 def updateHash(db, fileid, scanfile, containerid=None):
   try:
     hashes = computeHash(scanfile, [hashlib.sha512()])
-    if hashes:
+    if hashes and len(hashes):
       hash1 = hashes[0][0:16]
-      hash2 = hashes[0][16:]
-      db.execute("UPDATE files SET hash1=?,hash2=? WHERE id=?", [buffer(hash1), buffer(hash2), fileid])
+      if use_longer_hash:
+        hash2 = hashes[0][16:]
+        db.execute("UPDATE files SET hash1=?,hash2=? WHERE id=?", [buffer(hash1), buffer(hash2), fileid])
+      else:
+        db.execute("UPDATE files SET hash1=?,hash2=NULL WHERE id=?", [buffer(hash1), fileid])
   except KeyboardInterrupt:
     raise
   except:
