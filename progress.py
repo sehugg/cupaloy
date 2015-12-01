@@ -54,7 +54,8 @@ class ProgressTracker:
   def __repr__(self):
     if len(self.stack):
       # TODO: unicode escape?
-      return "(%d/%d) (%d/%d) %80s" % (self.files_visited, self.files_max, self.dirs_visited, self.dirs_max, [self.current_name[0:60]])
+      n = ('%s' % [self.current_name])[0:60]
+      return "(%d/%d) (%d/%d) %80s" % (self.files_visited, self.files_max, self.dirs_visited, self.dirs_max, n)
     else:
       return "-"
 
