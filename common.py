@@ -511,8 +511,12 @@ def fixTimestamp(ts):
   0L
   """
   if type(ts) == type((0,)):
-    dt = apply(datetime.datetime, ts)
-    return long(time.mktime(dt.timetuple()))
+    try:
+      dt = apply(datetime.datetime, ts)
+      return long(time.mktime(dt.timetuple()))
+    except:
+      print (ts, sys.exc_info())
+      return None
   elif ts == None:
     return None
   else:

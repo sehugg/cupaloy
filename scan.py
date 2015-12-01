@@ -106,10 +106,11 @@ def processZipFile(arcfile, containerid=None):
   with arcfile.getFileHandle() as f:
     with zipfile.ZipFile(f, 'r') as zipf:
       for info in zipf.infolist():
-        sf = ZipScanFile(joinPaths(arcfile.key, parseUnicode(info.filename)), info.file_size, info.date_time)
-        sf.zipfile = zipf
-        sf.zipinfo = info
-        addFileEntry(filesdb, sf, containerid=containerid)
+        if not info.filename.endswith('/'): # is a file, in other words...
+          sf = ZipScanFile(joinPaths(arcfile.key, parseUnicode(info.filename)), info.file_size, info.date_time)
+          sf.zipfile = zipf
+          sf.zipinfo = info
+          addFileEntry(filesdb, sf, containerid=containerid)
 
 def processArchive(arcfile, containerid=None):
   with arcfile.getFileHandle() as f:
