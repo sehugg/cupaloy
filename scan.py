@@ -92,6 +92,8 @@ def addFileEntry(db, scanfile, containerid=None):
   size = scanfile.size
   # TODO: mtime == 0 or mtime > now
   folderpath,filename = os.path.split(path)
+  if containerid is None: # if is a real file, update progress
+    progress.inc(filename, size)
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(db, folderpath, fileid=containerid)
   cur = db.cursor()
@@ -106,6 +108,8 @@ def addFileEntry(db, scanfile, containerid=None):
       print (folderid, folderpath, filename, size, mtime)
     cur.execute("INSERT OR REPLACE INTO files (folder_id,name,size,modtime,lastseentime,io_errors,fmt_errors) VALUES (?,?,?,?,?,?,?)",
       [folderid, filename, size, mtime, sessionStartTime, None, None])
+    # TODO: num_added?
+    # TODO: scanres.num_modified += 1
     fileid = long(cur.lastrowid)
     updateHash(db, fileid, scanfile, containerid)
     return fileid
@@ -122,6 +126,7 @@ def processTarFile(arcfile, containerid=None):
           sf = TarScanFile(joinPaths(arcfile.key, parseUnicode(info.name)), info.size, info.mtime)
           sf.tarfile = tarf
           sf.tarinfo = info
+          progress.incGoal(info.name, info.size)
           addFileEntry(filesdb, sf, containerid=containerid)
 
 class ZipScanFile(ScanFile):
@@ -131,12 +136,18 @@ class ZipScanFile(ScanFile):
 def processZipFile(arcfile, containerid=None):
   with arcfile.getFileHandle() as f:
     with zipfile.ZipFile(f, 'r') as zipf:
-      for info in zipf.infolist():
-        if not info.filename.endswith('/'): # is a file, in other words...
-          sf = ZipScanFile(joinPaths(arcfile.key, parseUnicode(info.filename)), info.file_size, info.date_time)
-          sf.zipfile = zipf
-          sf.zipinfo = info
-          addFileEntry(filesdb, sf, containerid=containerid)
+      infolist = zipf.infolist()
+      progress.pushGoal(len(infolist), arcfile.size)
+      try:
+        for info in infolist:
+          if not info.filename.endswith('/'): # is a file, in other words...
+            sf = ZipScanFile(joinPaths(arcfile.key, parseUnicode(info.filename)), info.file_size, info.date_time)
+            sf.zipfile = zipf
+            sf.zipinfo = info
+            progress.inc(info.filename, info.compress_size)
+            addFileEntry(filesdb, sf, containerid=containerid)
+      finally:
+        progress.popGoal()
 
 def processArchive(arcfile, containerid=None):
   with arcfile.getFileHandle() as f:
@@ -145,6 +156,7 @@ def processArchive(arcfile, containerid=None):
         if entry.isfile:
           sf = ScanFile(joinPaths(arcfile.key, parseUnicode(entry.path)), entry.size, entry.mtime)
           # TODO: getFileHandle
+          progress.incGoal(entry.path, entry.size)
           addFileEntry(filesdb, sf, containerid=containerid)
 
 def setErrorFromException(filesdb, type, fileid):
@@ -180,11 +192,11 @@ def processScanFile(scanfile):
       # TODO: what if error caused by database?
       setErrorFromException(filesdb, 'fmt', fileid)
 
-
 ###
 
 def run(args, keywords):
   global filesdb, force, rescan, compute_hashes
+  global progress, scanres
   force = 'force' in keywords
   rescan = 'rescan' in keywords
   if rescan:
@@ -198,11 +210,14 @@ def run(args, keywords):
     return False
   for arg in args:
     cloc = parseCollectionLocation(globaldb, arg, create=force)
-    print "Scanning %s" % (str(cloc))
-    progress = ProgressTracker()
     filesdb = openFileDatabase(cloc.getFileDatabasePath(), create=True)
+    numfiles,totalsize = filesdb.execute("SELECT COUNT(*),SUM(size) FROM files JOIN folders ON folder_id=folders.id AND file_id IS NULL").fetchone()
+    progress = ProgressTracker()
+    if numfiles and totalsize:
+      progress.pushGoal(numfiles,totalsize)
     scanres = ScanResults(cloc)
-    scanner = FileScanner(cloc.url, progress)
+    scanner = FileScanner(cloc.url)
+    print "Scanning %s" % (str(cloc))
     for scanfile in scanner.scan():
       processScanFile(scanfile)
       filesdb.commit()

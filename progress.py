@@ -6,38 +6,38 @@ class ProgressTracker:
 
   def __init__(self):
     self.files_visited = 0
-    self.dirs_visited = 0
+    self.size_visited = 0
     self.files_max = 0
-    self.dirs_max = 0
+    self.size_max = 0
     self.count = 0
     self.last_refresh_time = 0
     self.refresh_interval = 0
     self.current_name = ''
-    self.stack = []
-
-  def push(self, name, nfiles, ndirs):
-    self.stack.append((name, nfiles, ndirs, self.count))
-    self.count = 0
-    if nfiles:
-      self.files_max += nfiles
-    if ndirs:
-      self.dirs_max += ndirs
-    self.current_name = name
+    self.goals = []
+    
+  def pushGoal(self, dfiles, dsize=0):
+    self.files_max += dfiles
+    self.size_max += dsize
+    self.goals.append((self.files_visited+dfiles, self.size_visited+dsize))
+  
+  def popGoal(self):
+    nf,ns = self.goals.pop()
+    self.files_visited = nf
+    self.size_visited = ns
     self.refresh()
   
-  def pop(self):
-    name, nfiles, ndirs, count = self.stack.pop()
-    if nfiles:
-      self.files_max += self.count - nfiles
-    self.count = count
-    self.dirs_visited += 1
-    self.current_name = name
-  
-  def inc(self, name, dsize=None):
-    self.count += 1
+  def inc(self, name, dsize=0):
     self.files_visited += 1
+    self.size_visited += dsize
+    self.files_max = max(self.files_max, self.files_visited)
+    self.size_max = max(self.size_max, self.size_visited)
     self.current_name = name
     self.refresh()
+    
+  def incGoal(self, name, dsize=0):
+    self.files_max += 1
+    self.size_max += dsize
+    self.inc(name, dsize)
 
   def refresh(self, force=False):
     t = time.time()
@@ -51,12 +51,16 @@ class ProgressTracker:
     sys.stdout.flush()
     
   def __repr__(self):
-    if len(self.stack):
-      # TODO: unicode escape?
-      n = ('%s' % [self.current_name])[0:60]
-      return "(%d/%d) (%d/%d) %80s" % (self.files_visited, self.files_max, self.dirs_visited, self.dirs_max, n)
+    # TODO: unicode escape?
+    n = ('%s' % [self.current_name])[0:60]
+    if len(self.goals) == 0:
+      s = "(%d)" % (self.files_visited)
+    elif self.size_max > 0:
+      pct = self.size_visited*100.0/self.size_max
+      s = "(%d/%d) %5.1f%%" % (self.files_visited, self.files_max, pct)
     else:
-      return "-"
+      s = "(%d/%d)" % (self.files_visited, self.files_max)
+    return ("%s %" + str(80-len(s)) + "s") % (s, n)
 
 
 ###

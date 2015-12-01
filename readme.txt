@@ -119,7 +119,7 @@ estimate progress from last scan
 real/virtual duplicate checking combinations
 progress for scanning inside archives
 4 GB zip files?
-sha512/256 check?
 inline include/excludes
+prettier/more accurate progress, integrate w/ logging, ansi/vt-aware
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;
