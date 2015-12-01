@@ -38,20 +38,20 @@ force = False
 rescan = False
 compute_hashes = True
 
-def computeHashOfFile(f, hashfn):
+def computeHashOfFile(f, digests, bufsize=0x1000):
   """
   >>> import binascii
-  >>> binascii.hexlify(computeHashOfFile(open('tests/root/emptyfile.txt','r'), hashlib.md5))
+  >>> binascii.hexlify(computeHashOfFile(open('tests/files/root/emptyfile.txt','r'), [hashlib.md5()])[0])
   'd41d8cd98f00b204e9800998ecf8427e'
-  >>> binascii.hexlify(computeHashOfFile(open('tests/archives/root/rabin.tgz.bz2','r'), hashlib.md5))
+  >>> binascii.hexlify(computeHashOfFile(open('tests/files/archives/root/rabin.tgz.bz2','r'), [hashlib.md5()])[0])
   '704ca9f2a35f52960f4f94926991241b'
   """
-  m = hashfn()
-  arr = f.read(0x1000)
+  arr = f.read(bufsize)
   while arr:
-    m.update(arr)
-    arr = f.read(0x1000)
-  return m.digest()
+    for m in digests:
+      m.update(arr)
+    arr = f.read(bufsize)
+  return [m.digest() for m in digests]
 
 def computeHash(scanfile, hashfn):
   if not compute_hashes:
@@ -65,8 +65,10 @@ def computeHash(scanfile, hashfn):
       return computeHashOfFile(f, hashfn)
 
 def updateHash(db, fileid, scanfile):
-  hash_md5 = computeHash(scanfile, hashlib.md5)
-  if hash_md5:
+  hashes = computeHash(scanfile, [hashlib.md5(), hashlib.sha512()])
+  if hashes:
+    hash_md5,hash_sha512 = hashes
+    # TODO: sha512
     db.execute("UPDATE files SET hash_md5=? WHERE id=?", [buffer(hash_md5), fileid])
 
 def addFileEntry(db, scanfile, containerid=None):
