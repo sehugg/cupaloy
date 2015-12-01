@@ -64,12 +64,22 @@ def computeHash(scanfile, hashfn):
     if f:
       return computeHashOfFile(f, hashfn)
 
-def updateHash(db, fileid, scanfile):
-  hashes = computeHash(scanfile, [hashlib.sha512()])
-  if hashes:
-    hash1 = hashes[0][0:16]
-    hash2 = hashes[0][16:]
-    db.execute("UPDATE files SET hash1=?,hash2=? WHERE id=?", [buffer(hash1), buffer(hash2), fileid])
+def updateHash(db, fileid, scanfile, containerid=None):
+  try:
+    hashes = computeHash(scanfile, [hashlib.sha512()])
+    if hashes:
+      hash1 = hashes[0][0:16]
+      hash2 = hashes[0][16:]
+      db.execute("UPDATE files SET hash1=?,hash2=? WHERE id=?", [buffer(hash1), buffer(hash2), fileid])
+  except KeyboardInterrupt:
+    raise
+  except:
+    db.execute("UPDATE files SET hash1=NULL,hash2=NULL WHERE id=?", [fileid])
+    # log I/O error if we are NOT part of an archive -- i.e. a real file
+    if containerid:
+      raise
+    else:
+      setErrorFromException(db, 'io', fileid)
 
 def addFileEntry(db, scanfile, containerid=None):
   path = scanfile.key
@@ -80,18 +90,19 @@ def addFileEntry(db, scanfile, containerid=None):
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(db, folderpath, fileid=containerid)
   cur = db.cursor()
-  fileinfo = not rescan and cur.execute("SELECT id,size,modtime,hash1 FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND errors IS NULL", [folderid, filename, size, mtime]).fetchone()
+  fileinfo = not rescan and cur.execute("SELECT id,size,modtime,hash1 FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND io_errors IS NULL", [folderid, filename, size, mtime]).fetchone()
   if fileinfo:
     if not fileinfo[3]: #TODO?
-      updateHash(db, fileinfo[0], scanfile)
+      updateHash(db, fileinfo[0], scanfile, containerid)
     cur.execute("UPDATE files SET lastseentime=? WHERE id=?", [sessionStartTime, fileinfo[0]])
     return fileinfo
   else:
     if verbose:
       print (folderid, folderpath, filename, size, mtime)
-    cur.execute("INSERT OR REPLACE INTO files (folder_id,name,size,modtime,lastseentime,errors) VALUES (?,?,?,?,?,?)", [folderid, filename, size, mtime, sessionStartTime, None])
+    cur.execute("INSERT OR REPLACE INTO files (folder_id,name,size,modtime,lastseentime,io_errors,fmt_errors) VALUES (?,?,?,?,?,?,?)",
+      [folderid, filename, size, mtime, sessionStartTime, None, None])
     fileid = long(cur.lastrowid)
-    updateHash(db, fileid, scanfile)
+    updateHash(db, fileid, scanfile, containerid)
     return fileid
 
 class TarScanFile(ScanFile):
@@ -131,14 +142,20 @@ def processArchive(arcfile, containerid=None):
           # TODO: getFileHandle
           addFileEntry(filesdb, sf, containerid=containerid)
 
+def setErrorFromException(filesdb, type, fileid):
+  print 'ERROR:',type,sys.exc_info()[1]
+  if verbose:
+    traceback.print_exc(file=sys.stderr)
+  filesdb.execute("UPDATE files SET %s_errors=? WHERE id=?" % type, [str(sys.exc_info()[1]), fileid])
+
 def processScanFile(scanfile):
   fileinfo = addFileEntry(filesdb, scanfile)
   wasmodified = type(fileinfo) == type(0L)
   # file is added/modified (or rescan), and has file handle
   if (rescan or wasmodified) and hasattr(scanfile, 'getFileHandle'):
     fileid = fileinfo if wasmodified else fileinfo[0]
+    fn = scanfile.key.lower()
     try:
-      fn = scanfile.key.lower()
       compressed = False
       if fn.endswith(EXTS_TAR):
         processTarFile(scanfile, containerid=fileid)
@@ -154,10 +171,9 @@ def processScanFile(scanfile):
       filesdb.rollback()
       raise
     except:
-      print 'ERROR:',sys.exc_info()[1]
-      if verbose:
-        traceback.print_exc(file=sys.stderr)
-      filesdb.execute("UPDATE files SET errors=? WHERE id=?", [str(sys.exc_info()[1]), fileid])
+      # log fmt error if we were reading an archive when error occured
+      # TODO: what if error caused by database?
+      setErrorFromException(filesdb, 'fmt', fileid)
 
 
 ###

@@ -121,3 +121,5 @@ progress for scanning inside archives
 4 GB zip files?
 sha512/256 check?
 inline include/excludes
+
+find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;
