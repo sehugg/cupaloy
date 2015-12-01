@@ -115,3 +115,4 @@ clear memory db after every op?
 filter by collection and file name/metadata
 warn/ignore if file has wrong extension (.zip)
 estimate progress from last scan
+real/virtual duplicate checking combinations

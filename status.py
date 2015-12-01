@@ -17,7 +17,7 @@ def pct(n,d,dups=None):
 def run(args, keywords):
     
   clocs = getAllCollectionLocations(args)
-  mergedb = getMergedFileDatabase(clocs)
+  mergedb = getMergedFileDatabase(clocs, include_virtual=('archives' in keywords))
   uuids = clocs.keys()
   if len(uuids)==0:
     print "No collections specified."
@@ -25,7 +25,9 @@ def run(args, keywords):
     
   mergedb.execute("""
   CREATE TABLE dupfiles AS
-    SELECT COUNT(*) as dups,collidx,GROUP_CONCAT(locidx) as locs,path,name,
+    SELECT COUNT(*) as dups,collidx,
+      GROUP_CONCAT(case when is_real then locidx else '['||locidx||']' end) as locs,
+      path,name,
       MIN(IFNULL(size,-1)) as minsize,
       MAX(IFNULL(size,0)) as maxsize,
       MIN(IFNULL(modtime,-1)) as mintime,

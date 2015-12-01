@@ -15,8 +15,9 @@ def pct(n,d,dups):
     return "%5.1f%%" % (math.floor(n*1000.0/d)/10.0)
 
 def run(args, keywords):
+
   clocs = getAllCollectionLocations(args)
-  mergedb = getMergedFileDatabase(clocs, include_virtual=True)
+  mergedb = getMergedFileDatabase(clocs, include_virtual=('archives' in keywords))
   uuids = clocs.keys()
   if len(uuids)==0:
     print "No collections specified."
@@ -27,7 +28,7 @@ def run(args, keywords):
     SELECT 
       COUNT(*) as dups,
       GROUP_CONCAT(DISTINCT collidx) as colls,
-      GROUP_CONCAT(DISTINCT locidx) as locs,
+      GROUP_CONCAT(DISTINCT case when is_real then locidx else '['||locidx||']' end) as locs,
       path,
       name,
       size,
