@@ -18,7 +18,8 @@ def run(args, keywords):
   # write changes?
   if keywords.get('force'):
     globaldb.execute("DELETE FROM scans WHERE uuid=? AND url=?", [cloc.collection.uuid, cloc.url])
-    os.remove(destdbpath)
+    if os.path.exists(destdbpath):
+      os.remove(destdbpath)
     globaldb.commit()
     print "Removed %s" % destdbpath
     return True
