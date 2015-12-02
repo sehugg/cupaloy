@@ -210,7 +210,7 @@ def processScanFile(scanfile):
 def run(args, keywords):
   global filesdb, force, rescan, compute_hashes
   global progress, scanres
-  force = 'force' in keywords
+  force = 'force' in keywords # TODO?
   rescan = 'rescan' in keywords
   if rescan:
     print "Rescanning."
@@ -222,7 +222,7 @@ def run(args, keywords):
     print "Must specify at least one collection."
     return False
   for arg in args:
-    cloc = parseCollectionLocation(globaldb, arg, create=force)
+    cloc = parseCollectionLocation(globaldb, arg)
     filesdb = openFileDatabase(cloc.getFileDatabasePath(), create=True)
     numfiles,totalsize = filesdb.execute("SELECT COUNT(*),SUM(size) FROM files JOIN folders ON folder_id=folders.id AND file_id IS NULL").fetchone()
     progress = ProgressTracker()
