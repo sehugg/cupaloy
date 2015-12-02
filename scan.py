@@ -1,12 +1,11 @@
 #!/usr/bin/python
 
-import sys,os,os.path,time,traceback
+import sys,os,os.path,time,traceback,urlparse
 import tarfile,zipfile
 import sqlite3
 import libarchive
 import hashlib
 from common import *
-from scanner_file import *
 from progress import ProgressTracker
 from contextlib import closing
 
@@ -19,6 +18,20 @@ ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
+
+###
+
+# get scanner for URL
+
+def getScannerForURL(url):
+  if url.startswith('file:'):
+    from scanner_file import *
+    return FileScanner(url)
+  elif url.startswith('s3:'):
+    from scanner_aws_s3 import *
+    return AWSS3Scanner(url)
+  else:
+    raise Exception("Unrecognized URL: %s" % url)
 
 ###
 
@@ -216,7 +229,7 @@ def run(args, keywords):
     if numfiles and totalsize:
       progress.pushGoal(numfiles,totalsize)
     scanres = ScanResults(cloc)
-    scanner = FileScanner(cloc.url)
+    scanner = getScannerForURL(cloc.url)
     print "Scanning %s" % (str(cloc))
     for scanfile in scanner.scan():
       processScanFile(scanfile)

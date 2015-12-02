@@ -231,6 +231,7 @@ def loadCollectionLocation(dir, create=False):
       obj = json.load(inf)
       return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir))
   elif create:
+    # TODO
     url = getFileURL(dir)
     uid = uuid.uuid3(uuid.NAMESPACE_URL, url)
     name = urlparse.urlparse(url).netloc
@@ -512,8 +513,12 @@ def fixTimestamp(ts):
   """
   >>> fixTimestamp(0)
   0L
+  >>> fixTimestamp(datetime.datetime(1,2,3,4,5,6))
+  981194706L
   """
-  if type(ts) == type((0,)):
+  if type(ts) == datetime.datetime:
+    return long(time.mktime(ts.timetuple()))
+  elif type(ts) == type((0,)):
     try:
       dt = apply(datetime.datetime, ts)
       return long(time.mktime(dt.timetuple()))

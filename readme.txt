@@ -121,5 +121,6 @@ progress for scanning inside archives
 4 GB zip files?
 inline include/excludes
 prettier/more accurate progress, integrate w/ logging, ansi/vt-aware
+identify file characteristics/archive contents from hash code
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;

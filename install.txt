@@ -1,2 +1,3 @@
 https://github.com/Changaco/python-libarchive-c
 https://pypi.python.org/pypi/tabulate
+boto3
