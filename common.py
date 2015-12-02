@@ -133,10 +133,10 @@ def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
         continue # TODO?
       fdp = loc.getFileDatabasePath()
       if not os.path.exists(fdp):
-        print "*** No db file %s" % fdp
+        print "*** No db file for %s" % loc
         continue
       if os.path.getsize(fdp) <= 0:
-        print "*** Empty db file %s" % fdp
+        print "*** Empty db file for %s" % loc
         continue
       mergedb.execute("ATTACH DATABASE ? AS db", [fdp])
       try:
