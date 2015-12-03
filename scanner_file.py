@@ -36,10 +36,14 @@ class FileScanner:
   def processFile(self, containerKey, filename):
     key = os.path.join(containerKey, filename)
     path = os.path.join(self.rootDir, containerKey, filename)
-    stat = os.stat(path)
-    mtime = min(stat.st_atime, stat.st_mtime, stat.st_ctime)
-    size = stat.st_size
-    return FilesystemFile(key, size, mtime, path)
+    if os.path.isfile(path):
+      stat = os.stat(path)
+      mtime = min(stat.st_atime, stat.st_mtime, stat.st_ctime)
+      size = stat.st_size
+      return FilesystemFile(key, size, mtime, path)
+    else:
+      print "Not a regular file: %s" % path
+      return None
 
 
 #for x in FileScanner("file:///home/huggvey/cupaloy/tests").scan():

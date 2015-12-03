@@ -34,6 +34,7 @@ def run(args, keywords):
   if keywords.get('force'):
     if srcdbpath != destdbpath:
       os.renames(srcdbpath, destdbpath)
+    # TODO: what if not directory-based?
     cfgfn = os.path.join(getDirectoryFromFileURL(cloc.url), METADIR)
     assert os.path.exists(cfgfn)
     cloc.collection.write(cfgfn, True)

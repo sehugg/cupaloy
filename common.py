@@ -556,7 +556,7 @@ class ScanFile:
     if mtime < 2 or mtime > sessionStartTime+(86400*365):
       mtime = None
     self.mtime = mtime
-
+  
   def __repr__(self):
     return str((self.key, self.size, self.mtime))
 

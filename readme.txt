@@ -16,6 +16,46 @@ NAME		Replicas	Where?		Coverage	Last check
 Huggs Archive	2		local/remote	100%		2 days ago
 
 
+DEFINITIONS
+
+A Collection is a set of files found at one or more Locations, meant to be
+backed up/mirrored.  A Collection has a UUID, which is either randomly
+assigned, directly assigned by user, or derived from a Location.  It also
+has a name.
+
+A Location is a directory on a filesystem or a URL, which may be associated
+with a Collection. The URL can either contain the UUID for a mounted volume
+or a network location. Paths are relative to the mounted volume or network
+location root. A Location can also be assigned a name which can be used as
+an alias.
+
+A Snapshot is a scan of a Collection at a given Location. A Snapshot
+contains details about the scan results, duration, and options.
+
+A Snapshot can have real and virtual folders. Real files are directly
+contained. Virtual files are indirectly contained in archive files or
+other file containers.
+
+A Collection or Location can have one or more tags.
+
+
+STATUS
+
+Check
+- file/size match coverage
+- hash match coverage
+- timestamp match coverage
+- last check for each replica
+- replica count
+- replica mixture
+- # errors
+- file access bits for online storage
+- media type
+- file format
+
+Score/identifier for each check
+
+
 NODES
 
 
@@ -122,5 +162,7 @@ progress for scanning inside archives
 inline include/excludes
 prettier/more accurate progress, integrate w/ logging, ansi/vt-aware
 identify file characteristics/archive contents from hash code
+can only rename directory-based collection
+sentinel files for DropBox/other sync tools?
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;

@@ -28,7 +28,8 @@ class ProgressTracker:
   
   def inc(self, name, dsize=0):
     self.files_visited += 1
-    self.size_visited += dsize
+    if dsize:
+      self.size_visited += dsize
     self.files_max = max(self.files_max, self.files_visited)
     self.size_max = max(self.size_max, self.size_visited)
     self.current_name = name
@@ -36,7 +37,8 @@ class ProgressTracker:
     
   def incGoal(self, name, dsize=0):
     self.files_max += 1
-    self.size_max += dsize
+    if dsize:
+      self.size_max += dsize
     self.inc(name, dsize)
 
   def refresh(self, force=False):

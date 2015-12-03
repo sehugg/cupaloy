@@ -97,7 +97,7 @@ def updateHash(db, fileid, scanfile, containerid=None):
     if containerid:
       raise
     else:
-      setErrorFromException(db, 'io', fileid)
+      setScanErrorFromException(db, 'io', fileid)
 
 def addFileEntry(db, scanfile, containerid=None):
   path = scanfile.key
@@ -172,11 +172,15 @@ def processArchive(arcfile, containerid=None):
           progress.incGoal(entry.path, entry.size)
           addFileEntry(filesdb, sf, containerid=containerid)
 
-def setErrorFromException(filesdb, type, fileid):
-  print 'ERROR:',type,sys.exc_info()[1]
+def setScanErrorFromException(filesdb, type, fileid):
+  msg = str(sys.exc_info()[1])
+  print 'ERROR:',type,msg
   if verbose:
     traceback.print_exc(file=sys.stderr)
-  filesdb.execute("UPDATE files SET %s_errors=? WHERE id=?" % type, [str(sys.exc_info()[1]), fileid])
+  setScanError(filesdb, type, fileid, msg)
+
+def setScanError(filesdb, type, fileid, msg):
+  filesdb.execute("UPDATE files SET %s_errors=? WHERE id=?" % type, [msg, fileid])
 
 def processScanFile(scanfile):
   fileinfo = addFileEntry(filesdb, scanfile)
@@ -203,7 +207,7 @@ def processScanFile(scanfile):
     except:
       # log fmt error if we were reading an archive when error occured
       # TODO: what if error caused by database?
-      setErrorFromException(filesdb, 'fmt', fileid)
+      setScanErrorFromException(filesdb, 'fmt', fileid)
 
 ###
 
@@ -232,8 +236,9 @@ def run(args, keywords):
     scanner = getScannerForURL(cloc.url)
     print "Scanning %s" % (str(cloc))
     for scanfile in scanner.scan():
-      processScanFile(scanfile)
-      filesdb.commit()
+      if scanfile:
+        processScanFile(scanfile)
+        filesdb.commit()
     print "Scan complete, updating database..."
     numdeleted = scanres.deleteFilesNotSeenSince(filesdb, sessionStartTime)
     numorphaned = scanres.deleteOrphanedFiles(filesdb)

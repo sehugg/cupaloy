@@ -13,6 +13,7 @@ class TestInit(unittest.TestCase):
 
   def test_init(self):
     tmpdir = tempfile.mkdtemp()
+    setHomeMetaDir(tmpdir)
     uid = str(uuid.uuid4())
     assert runCommand(['--name','Foo','--uuid',uid,'init',tmpdir]) == 0
     assert os.path.isdir(os.path.join(tmpdir, METADIR))
