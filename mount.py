@@ -33,7 +33,11 @@ class OSXMountInfo:
           mp = part.get('MountPoint')
           if mp:
             # TODO: UUID not same on Linux/OSX
-            mounts.append((part.get('VolumeUUID'), mp))
+            vol_uuid = part.get('VolumeUUID')
+            if vol_uuid:
+              mounts.append((vol_uuid, mp))
+            else:
+              mounts.append((part['VolumeName'], mp)) # TODO: no UUID
     self.mounts = mounts
 
   def forPath(self, path):

@@ -249,6 +249,8 @@ def getFileURL(path):
   """
   assert(len(path)>0)
   vol_uuid,vol_mount = mountInfo.forPath(path)
+  assert vol_uuid
+  assert vol_mount
   abspath = os.path.abspath(path)
   if abspath[0:len(vol_mount)] == vol_mount:
     return 'file://%s' % joinPaths(vol_uuid, abspath[len(vol_mount):])
