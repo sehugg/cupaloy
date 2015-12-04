@@ -20,7 +20,9 @@ sessionStartTime = long(time.time())
 METADIR='.cupaloy'
 GLOBALDBFILE='hosts/%s.db'
 
-EXCLUDES=['.cupaloy','*~','.DS_Store','._*','.~lock.*','.Spotlight*',u'Icon\uf00d','Icon\r','fseventsd-uuid']
+EXCLUDES=['.cupaloy','.DS_Store','.Spotlight*',u'Icon\uf00d','Icon\r','fseventsd-uuid',
+'.Trashes','ehthumbs.db','desktop.ini','Thumbs.db',
+'~*','*~','.~lock.*','*.crdownload','@eaDir','@SynoResource','.@__thumb','._*']
 INCLUDES=[]
 
 verbose = 0
@@ -273,7 +275,10 @@ class CollectionLocation:
     return os.path.join(getHomeMetaDir(), 'collections', self.collection.uuid, fn)
     
   def __repr__(self):
-    return "%s @ %s" % (self.collection, self.locname if self.locname else self.url)
+    if self.locname:
+      return "%s @ %s (%s)" % (self.collection, self.locname, self.url)
+    else:
+      return "%s @ %s" % (self.collection, self.url)
 
 
 """
