@@ -23,20 +23,28 @@ backed up/mirrored.  A Collection has a UUID, which is either randomly
 assigned, directly assigned by user, or derived from a Location.  It also
 has a name.
 
-A Location is a directory on a filesystem or a URL, which may be associated
-with a Collection. The URL can either contain the UUID for a mounted volume
-or a network location. Paths are relative to the mounted volume or network
-location root. A Location can also be assigned a name which can be used as
+A Location is a directory on a filesystem or a URL which refers to a set of
+files.  The URL can either contain the UUID for a mounted volume or a
+network location.  Paths are relative to the mounted volume or network
+location root.  A Location can also be assigned a name which can be used as
 an alias.
 
 A Snapshot is a scan of a Collection at a given Location. A Snapshot
-contains details about the scan results, duration, and options.
+contains details about the scan results, scan duration, and scan options. 
+It also records the last known names of the Collection and Location, and the
+host name performing the scan.
 
 A Snapshot can have real and virtual folders. Real files are directly
 contained. Virtual files are indirectly contained in archive files or
 other file containers.
 
-A Collection or Location can have one or more tags.
+Files are located in folders, and have a folder path and filename. Files
+have a size and last known modification timestamp.  Files may also have a
+hash checksum, split into two parts (first 128 and last 384 bits of the
+SHA512 digest)
+
+A Collection or Location can have one or more tags. Tags can be used to
+select collections and/or locations.
 
 
 STATUS
@@ -100,10 +108,9 @@ files
 folders
 hashes
 scans
+locations
 tags
 
-
-SCAN
 
 (scannode,uuid,url,volume?)
 
@@ -164,5 +171,10 @@ prettier/more accurate progress, integrate w/ logging, ansi/vt-aware
 identify file characteristics/archive contents from hash code
 can only rename directory-based collection
 sentinel files for DropBox/other sync tools?
+- note that sync tools can mess up across multiple computers...
+- parse .dropbox file (same across shares)
+filter 'dups' results?
+better unicode solution (http://stackoverflow.com/questions/492483/setting-the-correct-encoding-when-piping-stdout-in-python)
+NTFS has no UUID for NTFS volumes (http://stackoverflow.com/questions/17612596/not-getting-uuid-from-diskutil-on-osx)
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;

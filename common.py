@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys,os.path,json,datetime,time,sqlite3,locale,urllib
+import sys,os.path,json,datetime,time,sqlite3,locale,urllib,codecs
 import platform,socket
 import uuid,urlparse
 import fnmatch,traceback
@@ -9,6 +9,10 @@ from mount import *
 # set UTF-8 locale
 # TODO: non-english
 locale.setlocale(locale.LC_ALL, ('en', 'utf-8'))
+
+# TODO: set encoding
+sys.stderr = codecs.getwriter('utf8')(sys.stderr)
+sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 # TODO?
 sessionStartTime = long(time.time())
@@ -237,9 +241,10 @@ class Collection:
 
 class CollectionLocation:
 
-  def __init__(self, collection, url, includes=None, excludes=None):
+  def __init__(self, collection, url, locname=None, includes=None, excludes=None):
     self.collection = collection
     self.url = url
+    self.locname = locname
     self.includes = includes
     self.excludes = excludes
 
@@ -268,7 +273,7 @@ class CollectionLocation:
     return os.path.join(getHomeMetaDir(), 'collections', self.collection.uuid, fn)
     
   def __repr__(self):
-    return "%s @ %s" % (self.collection, self.url)
+    return "%s @ %s" % (self.collection, self.locname if self.locname else self.url)
 
 
 """
@@ -326,12 +331,12 @@ def getDirectoryFromFileURL(url):
 def getCollectionLocationsFromDB(globaldb):
   # select most recent scan
   rows = globaldb.execute("""
-  SELECT DISTINCT uuid,name,url,MAX(start_time)
+  SELECT DISTINCT uuid,name,url,scanned_from,MAX(start_time)
   FROM scans
   GROUP BY uuid,url
   """)
   # TODO: timestamp?
-  return [CollectionLocation(Collection(x,y),z) for x,y,z,t in rows]  
+  return [CollectionLocation(Collection(x,y),z,h) for x,y,z,h,t in rows]
 
 """
 Find matching collections from a directory path, URL or (partial) name.
@@ -343,7 +348,7 @@ def parseCollectionLocations(globaldb, arg):
   # match the string against recently scanned collections
   # TODO: match with config file?
   rows = globaldb.execute("""
-  SELECT uuid,name,url,MAX(start_time) FROM scans
+  SELECT uuid,name,url,scanned_from,MAX(start_time) FROM scans
   WHERE uuid=? OR name=? or url=? 
   GROUP BY uuid,url
   ORDER BY MAX(start_time) DESC
@@ -351,12 +356,12 @@ def parseCollectionLocations(globaldb, arg):
   # exact match failed? prefix match
   if len(rows)==0:
     rows = globaldb.execute("""
-    SELECT uuid,name,url,MAX(start_time) FROM scans
+    SELECT uuid,name,url,scanned_from,MAX(start_time) FROM scans
     WHERE uuid LIKE ?||'%' OR name LIKE ?||'%' OR url LIKE ?||'%'
     GROUP BY uuid,url
     ORDER BY MAX(start_time) DESC
     """, [arg, arg, arg]).fetchall()
-  return [CollectionLocation(Collection(x,y),z) for x,y,z,t in rows]
+  return [CollectionLocation(Collection(x,y),z,h) for x,y,z,h,t in rows]
 
 """
 Find a single collection from a directory path, URL or (partial) name.
