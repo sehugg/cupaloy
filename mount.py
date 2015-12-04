@@ -27,17 +27,19 @@ class OSXMountInfo:
     plist = readPlistFromString(xml)
     mounts = []
     for disk in plist['AllDisksAndPartitions']:
+      list = [disk]
       partitions = disk.get('Partitions')
       if partitions:
-        for part in partitions:
-          mp = part.get('MountPoint')
-          if mp:
-            # TODO: UUID not same on Linux/OSX
-            vol_uuid = part.get('VolumeUUID')
-            if vol_uuid:
-              mounts.append((vol_uuid, mp))
-            else:
-              mounts.append((part['VolumeName'], mp)) # TODO: no UUID
+        list.extend(partitions)
+      for part in list:
+        mp = part.get('MountPoint')
+        if mp:
+          # TODO: UUID not same on Linux/OSX
+          vol_uuid = part.get('VolumeUUID')
+          if vol_uuid:
+            mounts.append((vol_uuid, mp))
+          else:
+            mounts.append((part['VolumeName'], mp)) # TODO: no UUID
     self.mounts = mounts
 
   def forPath(self, path):
@@ -78,5 +80,6 @@ else:
 if __name__ == '__main__':
   print mountInfo.forPath("/")
   print mountInfo.forPath("/media/huggvey/ISOIMAGE/boot")
+  print mountInfo.forPath("/Volumes/Passport/hdbackup")
   print mountInfo.forPath("a06997a7-9a7a-4395-9aa2-8630f3eb13b2")
   print mountInfo.locationForUUID("2012-07-03-20-55-41-00")

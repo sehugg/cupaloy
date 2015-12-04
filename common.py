@@ -17,13 +17,43 @@ METADIR='.cupaloy'
 GLOBALDBFILE='hosts/%s.db'
 
 EXCLUDES=['.cupaloy','*~','.DS_Store','._*','.~lock.*','.Spotlight*',u'Icon\uf00d','Icon\r','fseventsd-uuid']
+INCLUDES=[]
 
 verbose = 0
 
 ###
 
 def isIncluded(name):
-  return not isExcluded(name)
+  """
+  >>> INCLUDES.append('foo/*/bar/')
+  >>> isIncluded('foo')
+  True
+  >>> isIncluded('foo/latest')
+  True
+  >>> isIncluded('foo/latest/barro')
+  True
+  >>> isIncluded('foo/latest/bar/')
+  True
+  >>> isIncluded('foo/latest/barro/')
+  False
+  >>> isIncluded('foo/latest/glozz/')
+  False
+  """
+  inccount = 0
+  for inc in INCLUDES:
+    # only evaluate includes if # of path separators is >= that of file path
+    if name.count(os.sep) >= inc.count(os.sep):
+      if fnmatch.fnmatch(name, inc):
+        if verbose>1:
+          print "included: %s (%s)" % (name, inc)
+        return not isExcluded(name)
+      inccount += 1
+  if inccount:
+    if verbose>1:
+      print "not included: %s" % name
+    return False
+  else:
+    return not isExcluded(name)
 
 def isExcluded(name):
   """
@@ -36,6 +66,8 @@ def isExcluded(name):
   """
   for ex in EXCLUDES:
     if fnmatch.fnmatch(name, ex):
+      if verbose>1:
+        print "excluded: %s (%s)" % (name, ex)
       return True
   return False
 
@@ -205,9 +237,27 @@ class Collection:
 
 class CollectionLocation:
 
-  def __init__(self, collection, url):
+  def __init__(self, collection, url, includes=None, excludes=None):
     self.collection = collection
     self.url = url
+    self.includes = includes
+    self.excludes = excludes
+
+  def applyIncludes(self):
+    global INCLUDES,EXCLUDES
+    self.old_includes = INCLUDES
+    self.old_excludes = EXCLUDES
+    if self.includes:
+      INCLUDES = INCLUDES[:]
+      INCLUDES.extend(self.includes)
+    if self.excludes:
+      EXCLUDES = EXCLUDES[:]
+      EXCLUDES.extend(self.excludes)
+    
+  def unapplyIncludes(self):
+    global INCLUDES,EXCLUDES
+    INCLUDES = self.old_includes
+    EXCLUDES = self.old_excludes
 
   """
   Find the corresponding file database for this collection.
@@ -229,7 +279,8 @@ def loadCollectionLocation(dir):
   if os.path.exists(cfgfn):
     with open(cfgfn,'r') as inf:
       obj = json.load(inf)
-      return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir))
+      return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir), 
+        includes=obj.get('includes'), excludes=obj.get('excludes'))
   else:
     raise Exception("Could not find collection at %s" % dir)
 
@@ -238,13 +289,13 @@ Returns a file URL of the form "file://nodename/path"
 """
 def getFileURL(path):
   """
-  >>> getFileURL("/tmp")
+  >> getFileURL("/tmp")
   'file://a06997a7-9a7a-4395-9aa2-8630f3eb13b2/tmp'
-  >>> getFileURL("/")
+  >> getFileURL("/")
   'file://a06997a7-9a7a-4395-9aa2-8630f3eb13b2/'
-  >>> getFileURL("/boot/efi")
+  >> getFileURL("/boot/efi")
   'file://CB77-C81C/'
-  >>> getFileURL("/boot/efi/foo")
+  >> getFileURL("/boot/efi/foo")
   'file://CB77-C81C/foo'
   """
   assert(len(path)>0)

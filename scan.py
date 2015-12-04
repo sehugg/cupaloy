@@ -227,6 +227,7 @@ def run(args, keywords):
     return False
   for arg in args:
     cloc = parseCollectionLocation(globaldb, arg)
+    cloc.applyIncludes()
     filesdb = openFileDatabase(cloc.getFileDatabasePath(), create=True)
     numfiles,totalsize = filesdb.execute("SELECT COUNT(*),SUM(size) FROM files JOIN folders ON folder_id=folders.id AND file_id IS NULL").fetchone()
     progress = ProgressTracker()
@@ -249,6 +250,7 @@ def run(args, keywords):
     scanres.addToScansTable(globaldb)
     print "Done."
     filesdb.close()
+    cloc.unapplyIncludes()
   globaldb.close()
   return True
 

@@ -19,15 +19,20 @@ class FileScanner:
   def __init__(self, url):
     self.rootDir = getDirectoryFromFileURL(url)
     assert os.path.isdir(self.rootDir)
+    self.inodes = set()
     # TODO: make sure config file exists?
     # TODO: no trailing slash?
 
   def scan(self):
     startDir = self.rootDir
     for dirName, subdirList, fileList in os.walk(startDir, topdown=True):
-      # ignore meta directories (TODO)
-      subdirList[:] = filter(lambda x: isIncluded(x), subdirList)
+      if verbose:
+        print 'dir:',dirName
       containerKey = dirName[len(self.rootDir)+1:] # TODO: slashes matter
+      subdirList[:] = filter(lambda dir: isIncluded(os.path.join(containerKey, dir) + os.sep), subdirList)
+      if verbose:
+        print 'subdirs:',containerKey,subdirList
+      # TODO: does not descend into symlinks
       if isIncluded(containerKey):
         for filePath in fileList:
           if isIncluded(filePath):
@@ -38,6 +43,11 @@ class FileScanner:
     path = os.path.join(self.rootDir, containerKey, filename)
     if os.path.isfile(path):
       stat = os.stat(path)
+      # TODO: how to handle hard links?
+      #if stat.st_nlink > 1: # more than 1 hard link?
+      #  if stat.st_ino in self.inodes:
+      #    return None # already visited this file (hard-linked)
+      #  self.inodes.add(stat.st_ino)
       mtime = min(stat.st_atime, stat.st_mtime, stat.st_ctime)
       size = stat.st_size
       return FilesystemFile(key, size, mtime, path)
