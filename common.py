@@ -11,6 +11,8 @@ from mount import *
 locale.setlocale(locale.LC_ALL, ('en', 'utf-8'))
 
 # TODO: set encoding
+reload(sys)  
+sys.setdefaultencoding('utf8')
 sys.stderr = codecs.getwriter('utf8')(sys.stderr)
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 

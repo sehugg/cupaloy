@@ -177,5 +177,7 @@ filter 'dups' results?
 better unicode solution (http://stackoverflow.com/questions/492483/setting-the-correct-encoding-when-piping-stdout-in-python)
 NTFS has no UUID for NTFS volumes (http://stackoverflow.com/questions/17612596/not-getting-uuid-from-diskutil-on-osx)
 "collection@location" syntax
+better includes/excludes file vs dir vs archive
+find .cupaloy directories on a backup drive
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;

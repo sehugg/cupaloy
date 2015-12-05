@@ -12,7 +12,10 @@ class FilesystemFile(ScanFile):
 
   def getFileHandle(self):
     return open(self.path, 'rb')
-  
+
+def walkError(err):
+  print "Error walking filesystem: %s" % err
+  # TODO
 
 class FileScanner:
 
@@ -25,14 +28,14 @@ class FileScanner:
 
   def scan(self):
     startDir = self.rootDir
-    for dirName, subdirList, fileList in os.walk(startDir, topdown=True):
+    # TODO: what to do with symlinks? cycles?
+    for dirName, subdirList, fileList in os.walk(startDir, topdown=True, onerror=walkError, followlinks=False):
       if verbose:
         print 'dir:',dirName
       containerKey = dirName[len(self.rootDir)+1:] # TODO: slashes matter
       subdirList[:] = filter(lambda dir: isIncluded(os.path.join(containerKey, dir) + os.sep), subdirList)
       if verbose:
         print 'subdirs:',containerKey,subdirList
-      # TODO: does not descend into symlinks
       if isIncluded(containerKey):
         for filePath in fileList:
           if isIncluded(filePath):
