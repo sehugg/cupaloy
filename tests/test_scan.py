@@ -10,6 +10,9 @@ class TestInit(unittest.TestCase):
   def test_args(self):
     assert runCommand(['scan']) > 0
 
+  def test_empty(self):
+    assert runCommand(['scan','./tests/empty']) > 0
+
   def test_scan(self):
     tmpdir = tempfile.mkdtemp()
     setHomeMetaDir(tmpdir)

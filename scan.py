@@ -242,10 +242,15 @@ def run(args, keywords):
     scanres = ScanResults(cloc)
     scanner = getScannerForURL(cloc.url)
     print "Scanning %s" % (str(cloc))
+    num_real_files = 0
     for scanfile in scanner.scan():
       if scanfile:
         processScanFile(scanfile)
         filesdb.commit()
+        num_real_files += 1
+    if num_real_files <= 0:
+      print "No files found."
+      continue
     print "Scan complete, updating database..."
     numdeleted = scanres.deleteFilesNotSeenSince(filesdb, sessionStartTime)
     numorphaned = scanres.deleteOrphanedFiles(filesdb)
