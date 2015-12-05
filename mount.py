@@ -1,22 +1,55 @@
 #!/usr/bin/python
 
-import subprocess
+import subprocess,re
 from sys import platform as _platform
 from plistlib import readPlistFromString
 
 ###
 
+class MountedVolume:
+
+  def __init__(self, disk_uuid, disk_label, mediatype, vol_uuid, vol_label, fstype, mount_point):
+    self.disk_uuid = disk_uuid
+    self.disk_label = disk_label
+    self.mediatype = mediatype
+    self.vol_uuid = vol_uuid
+    self.vol_label = vol_label
+    self.fstype = fstype
+    self.mount_point = mount_point
+    
+  def __repr__(self):
+    return "%s:%s:%s:%s:%s:%s:%s" % (self.disk_uuid, self.disk_label, self.mediatype, self.vol_uuid, self.vol_label, self.fstype, self.mount_point)
+
+###
+
 class LinuxMountInfo:
 
+  def findmnt(self, extra_args):
+    args = ["findmnt","-Po","target,fstype,label,uuid,partlabel,partuuid"]
+    args.extend(extra_args)
+    output = subprocess.check_output(args).strip()
+    matches = re.findall('(\\w+)="(.*?)"', output)
+    dict = {}
+    for k,v in matches:
+      dict[k] = v
+    mediatype = 'unknown'
+    volume = MountedVolume(dict['UUID'], dict['LABEL'], mediatype, dict['PARTUUID'], dict['PARTLABEL'], dict['FSTYPE'], dict['TARGET'])
+    return volume
+  
+  def getVolumeAt(self, path):
+    return self.findmnt(['-T',path])
+    
+  def getVolumeByUUID(self, uuid):
+    return self.findmnt(['UUID='+uuid])
+
   def forPath(self, path):
+    volume = self.getVolumeAt(path)
+    return (volume.disk_uuid, volume.mount_point)
     # TODO: what if no findmnt?
-    return (
-      subprocess.check_output(["findmnt","-no","uuid","-T",path]).strip(),
-      subprocess.check_output(["findmnt","-no","target","-T",path]).strip()
-    )
 
   def locationForUUID(self, uuid):
-    return subprocess.check_output(["findmnt","-no","target","UUID="+uuid]).strip()
+    volume = self.getVolumeByUUID(uuid)
+    return volume.mount_point
 
 ###
 
@@ -78,8 +111,8 @@ else:
 ###
 
 if __name__ == '__main__':
-  print mountInfo.forPath("/")
-  print mountInfo.forPath("/media/huggvey/ISOIMAGE/boot")
-  print mountInfo.forPath("/Volumes/Passport/hdbackup")
-  print mountInfo.forPath("a06997a7-9a7a-4395-9aa2-8630f3eb13b2")
-  print mountInfo.locationForUUID("2012-07-03-20-55-41-00")
+  print mountInfo.getVolumeAt("/")
+  print mountInfo.getVolumeAt("/media/huggvey/ISOIMAGE/boot")
+  print mountInfo.getVolumeAt("/Volumes/Passport/hdbackup")
+  print mountInfo.getVolumeAt("a06997a7-9a7a-4395-9aa2-8630f3eb13b2")
+  print mountInfo.getVolumeByUUID("2012-07-03-20-55-41-00")

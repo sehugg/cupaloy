@@ -140,7 +140,7 @@ def run(args, keywords):
         s = "Fully replicated across %d locations" % (unique_locs)
       else:
         if find_hashes and hashsize > totsize:
-          s = "%s replicated across %d locations with %s of files moved" % (
+          s = "%s duplicated across %d locations with %s of files moved" % (
             pct(hashsize,tothashsize), unique_locs, pct(ncollfiles-nfiles,ncollfiles))
           r.append("check directory structure")
         else:

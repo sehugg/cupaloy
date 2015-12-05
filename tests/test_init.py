@@ -5,6 +5,13 @@ import uuid
 from common import *
 from main import runCommand
 
+def setup():
+  tmpdir = tempfile.mkdtemp()
+  setHomeMetaDir(tmpdir)
+  return tmpdir
+def cleanup(tmpdir):
+  shutil.rmtree(tmpdir)
+
 class TestInit(unittest.TestCase):
 
   def test_args(self):
@@ -12,8 +19,7 @@ class TestInit(unittest.TestCase):
     assert runCommand(['--name','Foo','init']) > 0
 
   def test_init(self):
-    tmpdir = tempfile.mkdtemp()
-    setHomeMetaDir(tmpdir)
+    tmpdir = setup()
     uid = str(uuid.uuid4())
     assert runCommand(['--name','Foo','--uuid',uid,'init',tmpdir]) == 0
     assert os.path.isdir(os.path.join(tmpdir, METADIR))
@@ -26,7 +32,7 @@ class TestInit(unittest.TestCase):
     assert cloc.collection.uuid == uid
     assert cloc.url
     assert runCommand(['init',tmpdir]) > 0 # already exists
-    shutil.rmtree(tmpdir)
+    cleanup(tmpdir)
 
 ###
 

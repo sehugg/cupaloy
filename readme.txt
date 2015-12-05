@@ -176,11 +176,14 @@ sentinel files for DropBox/other sync tools?
 filter 'dups' results?
 better unicode solution (http://stackoverflow.com/questions/492483/setting-the-correct-encoding-when-piping-stdout-in-python)
 NTFS has no UUID for NTFS volumes (http://stackoverflow.com/questions/17612596/not-getting-uuid-from-diskutil-on-osx)
+- special read-only file for disk UUID if not available?
 "collection@location" syntax
 better includes/excludes file vs dir vs archive
 find .cupaloy directories on a backup drive
 how to handle file path changes with --archives?
 type -> site -> host -> drive -> volume hierarchy?
+- tell when volumes are on the same drive
 fail when no files scanned
+have to confirm file modifications and/or deletions, ok if -> archive
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;
