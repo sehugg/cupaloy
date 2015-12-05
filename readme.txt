@@ -179,5 +179,8 @@ NTFS has no UUID for NTFS volumes (http://stackoverflow.com/questions/17612596/n
 "collection@location" syntax
 better includes/excludes file vs dir vs archive
 find .cupaloy directories on a backup drive
+how to handle file path changes with --archives?
+type -> site -> host -> drive -> volume hierarchy?
+fail when no files scanned
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;

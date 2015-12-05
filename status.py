@@ -6,6 +6,9 @@ from common import *
 
 find_hashes = 0 # TODO
 
+scan_interval_1 = 86400*2
+scan_interval_2 = 86400*30
+
 def pct(n,d,dups=None):
   if dups==1:
     return ''
@@ -25,7 +28,7 @@ def run(args, keywords):
   if len(uuids)==0:
     print "No collections specified."
     return False
-    
+
   mergedb.execute("""
   CREATE TABLE dupfiles AS
     SELECT
@@ -44,6 +47,7 @@ def run(args, keywords):
     WHERE size > 0
     GROUP BY collidx,path,name
   """)
+
   if find_hashes:
     mergedb.execute("""
     CREATE TABLE duphashes AS
@@ -89,7 +93,7 @@ def run(args, keywords):
     FROM stats 
     GROUP BY collidx
     ) t ON s.collidx=t.collidx
-  ORDER BY collidx,dups,locs
+  ORDER BY collidx,hashsize,totsize,locs
   """).fetchall()
 
   table = [
@@ -115,6 +119,7 @@ def run(args, keywords):
   print
   
   if 1:
+    # TODO: what if --archives?
     table = []
     for uuid,cloclist in clocs.items():
       collidx = uuids.index(uuid)
@@ -125,18 +130,28 @@ def run(args, keywords):
       netlocs = [string.join(urlparse.urlparse(cloc.url)[0:2],'://') for cloc in cloclist]
       netlocset = set(netlocs)
       unique_locs = len(netlocset)
+      scanages = [sessionStartTime - fixTimestamp(cloc.scantime) for cloc in cloclist]
+      s = ''
+      r = []
       if unique_locs < 2:
         s = "Not replicated"
+        r.append("add replica")
       elif totsize==totcollsize and samesize==nfiles and samehash==nfiles:
         s = "Fully replicated across %d locations" % (unique_locs)
-      elif find_hashes and hashsize > totsize:
-        s = "%s replicated across %d locations with %s of files at the same file path" % (
-          pct(hashsize,tothashsize), unique_locs, pct(nfiles,ncollfiles))
       else:
-        s = "%s replicated across %d locations" % (pct(1.0*totsize*samehash,1.0*totcollsize*nfiles), unique_locs)
+        if find_hashes and hashsize > totsize:
+          s = "%s replicated across %d locations with %s of files moved" % (
+            pct(hashsize,tothashsize), unique_locs, pct(ncollfiles-nfiles,ncollfiles))
+          r.append("check directory structure")
+        else:
+          s = "%s replicated across %d locations" % (pct(1.0*totsize*samehash,1.0*totcollsize*nfiles), unique_locs)
+        if scanages[0] > scan_interval_1:
+          r.append("scan on %s" % cloclist[0].locname)
+        elif scanages[-1] > scan_interval_2:
+          r.append("scan on %s" % cloclist[-1].locname)
       s += '.'
-      table.append((collection.name, s))
-    print tabulate.tabulate(table)
+      table.append((collection.name, s, string.join(r, ', ')))
+    print tabulate.tabulate(table, headers=["Collection","Status","Recommendations"])
 
   if 'list' in keywords:
     lastpath = ''

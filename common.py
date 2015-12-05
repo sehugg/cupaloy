@@ -245,10 +245,11 @@ class Collection:
 
 class CollectionLocation:
 
-  def __init__(self, collection, url, locname=None, includes=None, excludes=None):
+  def __init__(self, collection, url, locname=None, scantime=None, includes=None, excludes=None):
     self.collection = collection
     self.url = url
     self.locname = locname
+    self.scantime = scantime
     self.includes = includes
     self.excludes = excludes
 
@@ -343,7 +344,7 @@ def getCollectionLocationsFromDB(globaldb):
   GROUP BY uuid,url
   """)
   # TODO: timestamp?
-  return [CollectionLocation(Collection(x,y),z,h) for x,y,z,h,t in rows]
+  return [CollectionLocation(Collection(x,y),z,h,t) for x,y,z,h,t in rows]
 
 """
 Find matching collections from a directory path, URL or (partial) name.
@@ -368,7 +369,7 @@ def parseCollectionLocations(globaldb, arg):
     GROUP BY uuid,url
     ORDER BY MAX(start_time) DESC
     """, [arg, arg, arg]).fetchall()
-  return [CollectionLocation(Collection(x,y),z,h) for x,y,z,h,t in rows]
+  return [CollectionLocation(Collection(x,y),z,h,t) for x,y,z,h,t in rows]
 
 """
 Find a single collection from a directory path, URL or (partial) name.
