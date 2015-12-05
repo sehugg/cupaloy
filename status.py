@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os,os.path,sys,uuid,sqlite3,math
+import os,os.path,sys,uuid,sqlite3,math,urlparse,string
 import tabulate
 from common import *
 
@@ -14,7 +14,7 @@ def pct(n,d,dups=None):
   elif n==d:
     return '100%'
   else:
-    return "%5.1f%%" % (math.floor(n*1000.0/d)/10.0)
+    return "%0.1f%%" % (math.floor(n*1000.0/d)/10.0)
 
 def run(args, keywords):
   
@@ -83,7 +83,7 @@ def run(args, keywords):
   JOIN (
     SELECT
       collidx,
-      COUNT(*) as ncollfiles,
+      SUM(nfiles) as ncollfiles,
       SUM(totsize) as totcollsize,
       SUM(hashsize) as tothashsize
     FROM stats 
@@ -113,6 +113,30 @@ def run(args, keywords):
   print
   print tabulate.tabulate(table, headers=headers)
   print
+  
+  if 1:
+    table = []
+    for uuid,cloclist in clocs.items():
+      collidx = uuids.index(uuid)
+      rows = [row for row in results if row[0] == collidx]
+      last = rows[-1]
+      collidx,dups,locs,nfiles,totsize,samesize,sametime,samehash,nerrors,hashsize,ncollfiles,totcollsize,tothashsize = last
+      collection = cloclist[0].collection
+      netlocs = [string.join(urlparse.urlparse(cloc.url)[0:2],'://') for cloc in cloclist]
+      netlocset = set(netlocs)
+      unique_locs = len(netlocset)
+      if unique_locs < 2:
+        s = "Not replicated"
+      elif totsize==totcollsize and samesize==nfiles and samehash==nfiles:
+        s = "Fully replicated across %d locations" % (unique_locs)
+      elif find_hashes and hashsize > totsize:
+        s = "%s replicated across %d locations with %s of files at the same file path" % (
+          pct(hashsize,tothashsize), unique_locs, pct(nfiles,ncollfiles))
+      else:
+        s = "%s replicated across %d locations" % (pct(1.0*totsize*samehash,1.0*totcollsize*nfiles), unique_locs)
+      s += '.'
+      table.append((collection.name, s))
+    print tabulate.tabulate(table)
 
   if 'list' in keywords:
     lastpath = ''
