@@ -31,6 +31,9 @@ verbose = 0
 
 ###
 
+def parseUUID(uuid):
+  return str(uuid).lower()
+
 def isIncluded(name):
   """
   >>> INCLUDES.append('foo/*/bar/')
@@ -83,9 +86,10 @@ def cleanFilename(fn):
   """
   >>> cleanFilename('/foo/bar')
   '%2Ffoo%2Fbar'
-  >>> cleanFilename('file:///users/foo/bar/mega_mega-mega')
-  'file%3A%2F%2F%2Fusers%2Ffoo%2Fbar%2Fmega_mega-mega'
+  >>> cleanFilename('file:///users/foo/bar/Mega_mega-mega')
+  'file%3A%2F%2F%2Fusers%2Ffoo%2Fbar%2FMega_mega-mega'
   """
+  # TODO: lowercase?
   return urllib.quote(fn, safe='')
 
 def joinPaths(a, b):
@@ -228,7 +232,7 @@ class Collection:
   METAFILENAME='config.json'
   
   def __init__(self, uuid, name):
-    self.uuid = str(uuid)
+    self.uuid = parseUUID(uuid)
     self.name = name
     
   """
@@ -340,8 +344,7 @@ def getDirectoryFromFileURL(url):
   if pr.netloc and len(pr.netloc):
     volume = mountInfo.getVolumeByUUID(pr.netloc)
     if not volume:
-      print "Could not find volume for %s" % url
-      assert volume
+      raise Exception("Could not find volume for %s" % pr.netloc)
     return os.path.normpath(os.path.join(volume.mount_point, pr.path[1:]))
   else:
     return pr.path

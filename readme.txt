@@ -182,8 +182,12 @@ better includes/excludes file vs dir vs archive
 find .cupaloy directories on a backup drive
 how to handle file path changes with --archives?
 type -> site -> host -> drive -> volume hierarchy?
+- save into volumes table
 - tell when volumes are on the same drive
 fail when no files scanned
 have to confirm file modifications and/or deletions, ok if -> archive
+rename rewrites site db 
+case sensitivity for uuids/urls
+use collection root or .cupaloy dir for scan
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;

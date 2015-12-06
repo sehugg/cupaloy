@@ -9,6 +9,8 @@ from plistlib import readPlistFromString
 class MountedVolume:
 
   def __init__(self, disk_uuid, disk_label, mediatype, vol_uuid, vol_label, fstype, mount_point):
+    if not vol_uuid:
+      vol_uuid = disk_uuid # for Linux CDROMs
     assert disk_uuid
     assert vol_uuid
     self.disk_uuid = disk_uuid.lower()
@@ -47,7 +49,10 @@ class LinuxMountInfo:
     
   def getVolumeByUUID(self, uuid):
     assert uuid
-    return self.findmnt(['UUID='+uuid])
+    volume = self.findmnt(['PARTUUID='+uuid])
+    if not volume:
+      volume = self.findmnt(['UUID='+uuid])
+    return volume
 
   # TODO: what if no findmnt?
 
@@ -138,13 +143,14 @@ else:
 
 if __name__ == '__main__':
   print mountInfo.getVolumeAt("/")
+  print mountInfo.getVolumeAt("/tmp")
   print mountInfo.getVolumeAt("/media/huggvey/ISOIMAGE/boot")
   print mountInfo.getVolumeAt("/Volumes/Passport/hdbackup")
   print mountInfo.getVolumeAt("/Volumes/My Passport")
   print mountInfo.getVolumeAt("/Volumes/my passport")
   print mountInfo.getVolumeByUUID("My Passport")
   print mountInfo.getVolumeByUUID("my passport")
-  print mountInfo.getVolumeAt("a06997a7-9a7a-4395-9aa2-8630f3eb13b2")
+  print mountInfo.getVolumeByUUID("658c8dbc-f086-4d6c-9f33-180d3a008f1b")
   print mountInfo.getVolumeByUUID("2012-07-03-20-55-41-00")
   print mountInfo.getVolumeByUUID("F97D0277-5B42-3FDB-AECC-0FFDE220EC6A")
 
