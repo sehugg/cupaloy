@@ -128,6 +128,9 @@ def run(args, keywords):
         continue
       last = rows[-1]
       collidx,dups,locs,nfiles,totsize,samesize,sametime,samehash,nerrors,hashsize,ncollfiles,totcollsize,tothashsize = last
+      last2 = rows[-2] if len(rows)>1 else None
+      if last2:
+        collidx2,dups2,locs2,nfiles2,totsize2,samesize2,sametime2,samehash2,nerrors2,hashsize2,ncollfiles2,totcollsize2,tothashsize2 = last2
       collection = cloclist[0].collection
       netlocs = [string.join(urlparse.urlparse(cloc.url)[0:2],'://') for cloc in cloclist]
       netlocset = set(netlocs)
@@ -146,7 +149,13 @@ def run(args, keywords):
             pct(hashsize,tothashsize), unique_locs, pct(ncollfiles-nfiles,ncollfiles))
           r.append("check directory structure")
         else:
-          s = "%s replicated across %d locations" % (pct(1.0*totsize*samehash,1.0*totcollsize*nfiles), unique_locs)
+          num = 1.0*totsize*samehash
+          denom = 1.0*totcollsize*nfiles
+          s = "%s replicated across %d locations" % (pct(num, denom), unique_locs)
+          if last2 and unique_locs > 2:
+            num2 = 1.0*(totsize+totsize2)*(samehash+samehash2)
+            denom2 = 1.0*totcollsize*(nfiles+nfiles2)
+            s += ", %s across %d" % (pct(num2, denom2), unique_locs-1)
         if scanages[0] > scan_interval_1:
           r.append("scan on %s" % cloclist[0].locname)
         elif scanages[-1] > scan_interval_2:
