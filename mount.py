@@ -9,10 +9,10 @@ from plistlib import readPlistFromString
 class MountedVolume:
 
   def __init__(self, disk_uuid, disk_label, mediatype, vol_uuid, vol_label, fstype, mount_point):
-    self.disk_uuid = disk_uuid
+    self.disk_uuid = disk_uuid.lower()
     self.disk_label = disk_label
     self.mediatype = mediatype
-    self.vol_uuid = vol_uuid
+    self.vol_uuid = vol_uuid.lower()
     self.vol_label = vol_label
     self.fstype = fstype
     self.mount_point = mount_point
@@ -27,7 +27,10 @@ class LinuxMountInfo:
   def findmnt(self, extra_args):
     args = ["findmnt","-Po","target,fstype,label,uuid,partlabel,partuuid"]
     args.extend(extra_args)
-    output = subprocess.check_output(args).strip()
+    try:
+      output = subprocess.check_output(args).strip()
+    except subprocess.CalledProcessError:
+      return None
     matches = re.findall('(\\w+)="(.*?)"', output)
     dict = {}
     for k,v in matches:
@@ -37,9 +40,11 @@ class LinuxMountInfo:
     return volume
   
   def getVolumeAt(self, path):
+    assert path
     return self.findmnt(['-T',path])
     
   def getVolumeByUUID(self, uuid):
+    assert uuid
     return self.findmnt(['UUID='+uuid])
 
   # TODO: what if no findmnt?
@@ -61,28 +66,38 @@ class OSXMountInfo:
       for part in list:
         mp = part.get('MountPoint')
         if mp:
-          # TODO: UUID not same on Linux/OSX
-          disk_uuid = part.get('DiskUUID')
-          disk_name = part.get('Content')
-          vol_uuid = part.get('VolumeUUID')
-          vol_name = part.get('VolumeName')
-          volume = MountedVolume(disk_uuid, disk_name, 'unknown', vol_uuid, vol_name, 'unknown', mp)
-          mounts.append(volume)
+          mounts.append(mp)
     self.mounts = mounts
 
+  def volumeFor(self, path):
+    assert path
+    try:
+      xml = subprocess.check_output(["diskutil","info","-plist",path])
+    except subprocess.CalledProcessError:
+      return None
+    plist = readPlistFromString(xml)
+    disk_uuid = plist.get('DiskUUID')
+    disk_name = plist.get('Content')
+    vol_uuid = plist.get('VolumeUUID')
+    vol_name = plist.get('VolumeName')
+    writable = plist.get('Writable')
+    fstype = plist.get('FilesystemType')
+    mediatype = plist.get('MediaType')
+    mount_point = plist.get('MountPoint')
+    return MountedVolume(disk_uuid, disk_name, mediatype, vol_uuid, vol_name, fstype, mount_point)
+
   def getVolumeAt(self, path):
+    assert path
     best = None
     for m in self.mounts:
-      if path.startswith(m.mount_point):
-        if not best or len(m.mount_point) > len(best.mount_point):
+      if path.startswith(m):
+        if not best or len(m) > len(best):
           best = m
-    return best
+    return self.volumeFor(best) if best else None
 
   def getVolumeByUUID(self, uuid):
-    for m in self.mounts:
-      if m.vol_uuid == uuid: # TODO: ignore case?
-        return m
-    return None
+    assert uuid
+    return self.volumeFor(uuid)
 
 ###
 
@@ -93,6 +108,7 @@ class WindowsMountInfo:
     # TODO
 
 # TODO: removable/online/writeonce
+# TODO: case insensitive UUIDs?
 
 ###
 
@@ -112,4 +128,4 @@ if __name__ == '__main__':
   print mountInfo.getVolumeAt("a06997a7-9a7a-4395-9aa2-8630f3eb13b2")
   print mountInfo.getVolumeByUUID("2012-07-03-20-55-41-00")
   print mountInfo.getVolumeByUUID("F97D0277-5B42-3FDB-AECC-0FFDE220EC6A")
-  
+

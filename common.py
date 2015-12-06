@@ -380,7 +380,7 @@ def parseCollectionLocation(globaldb, arg, disambiguate=False):
   if len(results) == 0:
     raise Exception( "Could not find collection for '%s'." % (arg) )
   elif len(results) > 1 and not disambiguate:
-    raise Exception( "Multiple matching collections for '%s'." % (arg) )
+    raise Exception( "Multiple matching collections for '%s' (%s)." % (arg, results) )
   else:
     return results[0]
 

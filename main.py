@@ -13,7 +13,7 @@ def runCommand(argv):
   keywords = {}
   
   try:
-    opts, args = getopt.getopt(argv,"vn:h:fourAl",["verbose","name=","host=","force","omithash","uuid=","rescan","archives","list"])
+    opts, args = getopt.getopt(argv,"vn:h:fourAlu:",["verbose","name=","host=","force","omithash","uuid=","rescan","archives","list","url="])
     for opt, arg in opts:
       if opt in ('-v','--verbose'):
         verbose += 1
@@ -33,6 +33,8 @@ def runCommand(argv):
         keywords['archives'] = 1
       elif opt in ('-l','--list'):
         keywords['list'] = 1
+      elif opt in ('-U','--url'):
+        keywords['url'] = arg
     for arg in args:
       if arg in COMMANDS:
         commandsToRun.append(arg)

@@ -6,8 +6,9 @@ from common import *
 def run(args, keywords):
   name = keywords.get('name')
   uuid = keywords.get('uuid')
-  if not name and not uuid:
-    print "Must specify --name or --uuid"
+  url = keywords.get('url')
+  if not name and not uuid and not url:
+    print "Must specify --name, --uuid or --url"
     return False
   # TODO: --host?
   globaldb = openGlobalDatabase(getGlobalDatabasePath())
@@ -29,6 +30,9 @@ def run(args, keywords):
   if uuid:
     print "New UUID = '%s'" % uuid
     cloc.collection.uuid = uuid
+  if url:
+    print "New location = '%s'" % url
+    cloc.url = url
   destdbpath = cloc.getFileDatabasePath()
   # write changes?
   if keywords.get('force'):
