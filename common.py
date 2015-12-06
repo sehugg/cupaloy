@@ -312,12 +312,12 @@ def getFileURL(path):
   'file://CB77-C81C/foo'
   """
   assert(len(path)>0)
-  vol_uuid,vol_mount = mountInfo.forPath(path)
-  assert vol_uuid
-  assert vol_mount
+  volume = mountInfo.getVolumeAt(path)
+  assert volume.vol_uuid
+  assert volume.mount_point
   abspath = os.path.abspath(path)
-  if abspath[0:len(vol_mount)] == vol_mount:
-    return 'file://%s' % joinPaths(vol_uuid, abspath[len(vol_mount):])
+  if abspath[0:len(volume.mount_point)] == volume.mount_point:
+    return 'file://%s' % joinPaths(volume.vol_uuid, abspath[len(volume.mount_point):])
   else:
     # TODO? node name?
     return 'file:///%s' % (abspath)
@@ -332,7 +332,8 @@ def getDirectoryFromFileURL(url):
   # if file://netloc/, prepend root of mount to path
   # TODO?
   if pr.netloc and len(pr.netloc):
-    return os.path.normpath(os.path.join(mountInfo.locationForUUID(pr.netloc), pr.path[1:]))
+    volume = mountInfo.getVolumeByUUID(pr.netloc)
+    return os.path.normpath(os.path.join(volume.mount_point, pr.path[1:]))
   else:
     return pr.path
 

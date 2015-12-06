@@ -42,19 +42,13 @@ class LinuxMountInfo:
   def getVolumeByUUID(self, uuid):
     return self.findmnt(['UUID='+uuid])
 
-  def forPath(self, path):
-    volume = self.getVolumeAt(path)
-    return (volume.disk_uuid, volume.mount_point)
-    # TODO: what if no findmnt?
-
-  def locationForUUID(self, uuid):
-    volume = self.getVolumeByUUID(uuid)
-    return volume.mount_point
+  # TODO: what if no findmnt?
 
 ###
 
 class OSXMountInfo:
 
+  # TODO: CoreStorage
   def __init__(self):
     xml = subprocess.check_output(["diskutil","list","-plist"])
     plist = readPlistFromString(xml)
@@ -68,25 +62,26 @@ class OSXMountInfo:
         mp = part.get('MountPoint')
         if mp:
           # TODO: UUID not same on Linux/OSX
+          disk_uuid = part.get('DiskUUID')
+          disk_name = part.get('Content')
           vol_uuid = part.get('VolumeUUID')
-          if vol_uuid:
-            mounts.append((vol_uuid, mp))
-          else:
-            mounts.append((part['VolumeName'], mp)) # TODO: no UUID
+          vol_name = part.get('VolumeName')
+          volume = MountedVolume(disk_uuid, disk_name, 'unknown', vol_uuid, vol_name, 'unknown', mp)
+          mounts.append(volume)
     self.mounts = mounts
 
-  def forPath(self, path):
+  def getVolumeAt(self, path):
     best = None
     for m in self.mounts:
-      if path.startswith(m[1]):
-        if not best or len(m[1]) > len(best[1]):
+      if path.startswith(m.mount_point):
+        if not best or len(m.mount_point) > len(best.mount_point):
           best = m
     return best
 
-  def locationForUUID(self, uuid):
+  def getVolumeByUUID(self, uuid):
     for m in self.mounts:
-      if m[0] == uuid:
-        return m[1]
+      if m.vol_uuid == uuid: # TODO: ignore case?
+        return m
     return None
 
 ###
@@ -116,3 +111,5 @@ if __name__ == '__main__':
   print mountInfo.getVolumeAt("/Volumes/Passport/hdbackup")
   print mountInfo.getVolumeAt("a06997a7-9a7a-4395-9aa2-8630f3eb13b2")
   print mountInfo.getVolumeByUUID("2012-07-03-20-55-41-00")
+  print mountInfo.getVolumeByUUID("F97D0277-5B42-3FDB-AECC-0FFDE220EC6A")
+  
