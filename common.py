@@ -103,6 +103,12 @@ def humansize(nbytes):
 
 ###
 
+# rename file so that case is correct
+def fixFileCase(filepath):
+  if os.path.exists(filepath):
+    os.rename(filepath,filepath+'.tmp')
+    os.rename(filepath+'.tmp',filepath)
+
 def getHomeMetaDir():
   homedir = os.environ.get('CUPALOY_HOME') or os.environ['HOME']
   return os.path.join(homedir, METADIR)
@@ -333,6 +339,9 @@ def getDirectoryFromFileURL(url):
   # TODO?
   if pr.netloc and len(pr.netloc):
     volume = mountInfo.getVolumeByUUID(pr.netloc)
+    if not volume:
+      print "Could not find volume for %s" % url
+      assert volume
     return os.path.normpath(os.path.join(volume.mount_point, pr.path[1:]))
   else:
     return pr.path
@@ -395,6 +404,7 @@ def makeDirsFor(path):
 def openGlobalDatabase(filepath, create=False):
   if create:
     makeDirsFor(filepath)
+    fixFileCase(filepath)
   else:
     assert os.path.exists(filepath)
   db = sqlite3.connect(filepath)
@@ -517,6 +527,7 @@ class ScanResults:
 def openFileDatabase(filepath, create=False):
   if create:
     makeDirsFor(filepath)
+    fixFileCase(filepath)
   else:
     assert os.path.exists(filepath)
   db = sqlite3.connect(filepath)

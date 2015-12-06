@@ -124,6 +124,7 @@ def run(args, keywords):
     for uuid,cloclist in clocs.items():
       collidx = uuids.index(uuid)
       rows = [row for row in results if row[0] == collidx]
+      # TODO: when missing db files, doesn't work
       last = rows[-1]
       collidx,dups,locs,nfiles,totsize,samesize,sametime,samehash,nerrors,hashsize,ncollfiles,totcollsize,tothashsize = last
       collection = cloclist[0].collection

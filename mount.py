@@ -9,6 +9,8 @@ from plistlib import readPlistFromString
 class MountedVolume:
 
   def __init__(self, disk_uuid, disk_label, mediatype, vol_uuid, vol_label, fstype, mount_point):
+    assert disk_uuid
+    assert vol_uuid
     self.disk_uuid = disk_uuid.lower()
     self.disk_label = disk_label
     self.mediatype = mediatype
@@ -66,8 +68,9 @@ class OSXMountInfo:
       for part in list:
         mp = part.get('MountPoint')
         if mp:
-          mounts.append(mp)
+          mounts.append(mp.lower())
     self.mounts = mounts
+    self.uuid_case_map = {}
 
   def volumeFor(self, path):
     assert path
@@ -84,10 +87,19 @@ class OSXMountInfo:
     fstype = plist.get('FilesystemType')
     mediatype = plist.get('MediaType')
     mount_point = plist.get('MountPoint')
+    # TODO: NTFS has no UUID
+    if not disk_uuid:
+      disk_uuid = plist.get('VolumeName')
+    if not vol_uuid:
+      vol_uuid = plist.get('VolumeName')
+    # because diskutil is case-sensitive when looking up volume names...
+    self.uuid_case_map[vol_uuid.lower()] = vol_uuid
+    self.uuid_case_map[disk_uuid.lower()] = disk_uuid
     return MountedVolume(disk_uuid, disk_name, mediatype, vol_uuid, vol_name, fstype, mount_point)
 
   def getVolumeAt(self, path):
     assert path
+    path = path.lower()
     best = None
     for m in self.mounts:
       if path.startswith(m):
@@ -97,6 +109,9 @@ class OSXMountInfo:
 
   def getVolumeByUUID(self, uuid):
     assert uuid
+    uuid2 = self.uuid_case_map.get(uuid.lower())
+    if uuid2:
+      uuid = uuid2
     return self.volumeFor(uuid)
 
 ###
@@ -125,6 +140,10 @@ if __name__ == '__main__':
   print mountInfo.getVolumeAt("/")
   print mountInfo.getVolumeAt("/media/huggvey/ISOIMAGE/boot")
   print mountInfo.getVolumeAt("/Volumes/Passport/hdbackup")
+  print mountInfo.getVolumeAt("/Volumes/My Passport")
+  print mountInfo.getVolumeAt("/Volumes/my passport")
+  print mountInfo.getVolumeByUUID("My Passport")
+  print mountInfo.getVolumeByUUID("my passport")
   print mountInfo.getVolumeAt("a06997a7-9a7a-4395-9aa2-8630f3eb13b2")
   print mountInfo.getVolumeByUUID("2012-07-03-20-55-41-00")
   print mountInfo.getVolumeByUUID("F97D0277-5B42-3FDB-AECC-0FFDE220EC6A")
