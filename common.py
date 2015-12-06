@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys,os.path,json,datetime,time,sqlite3,locale,urllib,codecs
+import sys,os.path,json,datetime,time,sqlite3,locale,urllib,codecs,calendar
 import platform,socket
 import uuid,urlparse
 import fnmatch,traceback
@@ -585,15 +585,15 @@ def fixTimestamp(ts):
   """
   >>> fixTimestamp(0)
   0L
-  >>> fixTimestamp(datetime.datetime(1,2,3,4,5,6))
-  981194706L
+  >>> fixTimestamp(datetime.datetime(2001,2,3,4,5,6))
+  981173106L
   """
   if type(ts) == datetime.datetime:
-    return long(time.mktime(ts.timetuple()))
+    return long(calendar.timegm(ts.timetuple()))
   elif type(ts) == type((0,)):
     try:
       dt = apply(datetime.datetime, ts)
-      return long(time.mktime(dt.timetuple()))
+      return long(calendar.timegm(dt.timetuple()))
     except:
       print (ts, sys.exc_info())
       return None

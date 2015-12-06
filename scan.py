@@ -1,13 +1,16 @@
 #!/usr/bin/python
 
-import sys,os,os.path,time,traceback,urlparse
+import sys,os,os.path,time,traceback,urlparse,imp
 import tarfile,zipfile
 import sqlite3
-import libarchive
 import hashlib
 from common import *
 from progress import ProgressTracker
 from contextlib import closing
+try:
+  import libarchive
+except:
+  print "Could not import libarchive module: %s" % (sys.exc_info()[1])
 
 # logging
 import logging
