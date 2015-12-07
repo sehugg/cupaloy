@@ -167,7 +167,7 @@ def run(args, keywords):
         GROUP_CONCAT(minhash)=GROUP_CONCAT(maxhash) as hashequal
       FROM dupfiles
       GROUP BY path,name
-      HAVING (NOT sizeequal OR NOT hashequal)
+      --HAVING (NOT sizeequal OR NOT hashequal)
       ORDER BY path,name
     """):
       if 1: #isIncluded(row[0]) and isIncluded(row[1]):

@@ -230,6 +230,7 @@ def run(args, keywords):
     return False
   numGood = 0
   for arg in args:
+    clearFolderCache()
     cloc = None
     try:
       cloc = parseCollectionLocation(globaldb, arg)
