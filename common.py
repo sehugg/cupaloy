@@ -19,6 +19,8 @@ sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 # TODO?
 sessionStartTime = long(time.time())
 
+foldercache = {}
+
 METADIR='.cupaloy'
 GLOBALDBFILE='hosts/%s.db'
 
@@ -568,7 +570,9 @@ def openFileDatabase(filepath, create=False):
       db.execute(sql)
   return db
 
-foldercache = {}
+# TODO: this should be unneccessary
+def clearFolderCache():
+  foldercache.clear()
 
 def getFolderID(db, folderpath, create=False, fileid=None):
   id = foldercache.get(folderpath)
