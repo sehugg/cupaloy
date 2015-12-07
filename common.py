@@ -257,9 +257,13 @@ class Collection:
 
 class CollectionLocation:
 
-  def __init__(self, collection, url, locname=None, scantime=None, includes=None, excludes=None):
+  def __init__(self, collection, url, locname=None, scantime=None, includes=None, excludes=None, volume=None):
     self.collection = collection
     self.url = url
+    self.volume = volume
+    # TODO?
+    #if not volume:
+    #  self.volume = getVolumeFromURL(url)
     self.locname = locname
     self.scantime = scantime
     self.includes = includes
@@ -288,6 +292,20 @@ class CollectionLocation:
     assert self.url
     fn = '%s.db' % (cleanFilename(self.url))
     return os.path.join(getHomeMetaDir(), 'collections', self.collection.uuid, fn)
+
+  def updateVolume(self, db):
+    if self.volume:
+      v = self.volume
+      db.execute("""
+        REPLACE INTO volumes
+        (vol_uuid,vol_label,disk_uuid,disk_label,mediatype,fstype,mount_point,last_seen_from,last_seen_time,usage)
+        VALUES (?,?,?,?,?,?,?,?,?,?)
+      """, [
+        v.vol_uuid, v.vol_label, v.disk_uuid, v.disk_label,
+        v.mediatype, v.fstype, v.mount_point,
+        getNodeName(), sessionStartTime, 'unknown'
+      ])
+      db.commit()
     
   def __repr__(self):
     if self.locname:
@@ -304,27 +322,18 @@ def loadCollectionLocation(dir):
   if os.path.exists(cfgfn):
     with open(cfgfn,'r') as inf:
       obj = json.load(inf)
-      return CollectionLocation(Collection(obj['uuid'], obj['name']), getFileURL(dir), 
-        includes=obj.get('includes'), excludes=obj.get('excludes'))
+      volume = mountInfo.getVolumeAt(dir)
+      url = getURLForVolume(volume, dir)
+      return CollectionLocation(Collection(obj['uuid'], obj['name']), url, 
+        includes=obj.get('includes'), excludes=obj.get('excludes'), volume=volume)
   else:
     raise Exception("Could not find collection at %s" % dir)
 
 """
 Returns a file URL of the form "file://nodename/path"
 """
-def getFileURL(path):
-  """
-  >> getFileURL("/tmp")
-  'file://a06997a7-9a7a-4395-9aa2-8630f3eb13b2/tmp'
-  >> getFileURL("/")
-  'file://a06997a7-9a7a-4395-9aa2-8630f3eb13b2/'
-  >> getFileURL("/boot/efi")
-  'file://CB77-C81C/'
-  >> getFileURL("/boot/efi/foo")
-  'file://CB77-C81C/foo'
-  """
-  assert(len(path)>0)
-  volume = mountInfo.getVolumeAt(path)
+def getURLForVolume(volume, path):
+  assert volume
   assert volume.vol_uuid
   assert volume.mount_point
   abspath = os.path.abspath(path)
@@ -334,9 +343,16 @@ def getFileURL(path):
     # TODO? node name?
     return 'file:///%s' % (abspath)
 
+def getVolumeFromURL(url):
+  pr = urlparse.urlparse(url)
+  if pr.scheme == 'file' and pr.netloc and len(pr.netloc):
+    volume = mountInfo.getVolumeByUUID(pr.netloc)
+    return volume
+  return None
+
 def getDirectoryFromFileURL(url):
   """
-  >>> getDirectoryFromFileURL(getFileURL('/tmp'))
+  >>> getDirectoryFromFileURL('file:///tmp')
   '/tmp'
   """
   pr = urlparse.urlparse(url)
@@ -434,7 +450,7 @@ def openGlobalDatabase(filepath, create=False):
   db = sqlite3.connect(filepath)
   if create:
     executeSQLList(db, ["""
-    CREATE TABLE IF NOT EXISTS scans (
+    >2 CREATE TABLE IF NOT EXISTS scans (
       scanned_from TEXT,
       uuid TEXT,
       name TEXT,
@@ -454,7 +470,7 @@ def openGlobalDatabase(filepath, create=False):
     ""","""
     >1 ALTER TABLE scans ADD COLUMN vol_uuid TEXT
     ""","""
-    CREATE TABLE IF NOT EXISTS volumes (
+    >2 CREATE TABLE IF NOT EXISTS volumes (
       vol_uuid TEXT PRIMARY KEY,
       vol_label TEXT,
       disk_uuid TEXT,
@@ -519,7 +535,13 @@ class ScanResults:
     self.total_real_size = float(row[4])
   
   def addToScansTable(self, db):
-    values = [
+    db.execute("""
+      INSERT INTO scans
+        (scanned_from,uuid,name,url,vol_uuid,start_time,end_time,
+        num_real_files,num_virtual_files,num_modified,num_added,num_deleted,
+        min_mtime,max_mtime,total_real_size,hash_metadata)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    """, [
       getNodeName(),
       self.collection.uuid, self.collection.name, self.url, self.vol_uuid,
       self.start_time, self.end_time,
@@ -528,14 +550,7 @@ class ScanResults:
       self.min_mtime, self.max_mtime,
       self.total_real_size,
       self.hash_metadata,
-    ]
-    db.execute("""
-      INSERT INTO scans
-        (scanned_from,uuid,name,url,vol_uuid,start_time,end_time,
-        num_real_files,num_virtual_files,num_modified,num_added,num_deleted,
-        min_mtime,max_mtime,total_real_size,hash_metadata)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    """, values)
+    ])
     db.commit()
 
   def deleteFilesNotSeenSince(self, db, t):

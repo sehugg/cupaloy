@@ -260,6 +260,7 @@ def run(args, keywords):
     scanres.updateFromFilesTable(filesdb)
     print scanres
     scanres.addToScansTable(globaldb)
+    cloc.updateVolume(globaldb)
     print "Done."
     filesdb.close()
     filesdb = None

@@ -2,6 +2,7 @@
 
 import os,os.path,sys,uuid,urlparse
 from common import *
+from mount import mountInfo
 
 def run(args, keywords):
   name = keywords.get('name')
@@ -22,7 +23,9 @@ def run(args, keywords):
     uid = keywords.get('uuid')
     if not uid:
       uid = uuid.uuid4()
-    cl = CollectionLocation(Collection(uid, name), getFileURL(path))
+    volume = mountInfo.getVolumeAt(path)
+    url = getURLForVolume(volume, path)
+    cl = CollectionLocation(Collection(uid, name), url)
     cl.collection.write(metadir)
   elif uc.scheme and uc.netloc:
     url = arg
