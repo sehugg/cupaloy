@@ -4,7 +4,7 @@ import sys,os.path,json,datetime,time,sqlite3,locale,urllib,codecs,calendar
 import platform,socket
 import uuid,urlparse
 import fnmatch,traceback
-from mount import *
+from mount import mountInfo
 
 # set UTF-8 locale
 # TODO: non-english
@@ -406,6 +406,25 @@ def makeDirsFor(path):
     except:
       pass
 
+def executeSQLList(db, stmts):
+  userVersion = db.execute("PRAGMA user_version").fetchone()[0]
+  maxVersion = userVersion
+  if verbose:
+    print 'user_version %d' % userVersion
+  for sql in stmts:
+    sql = sql.strip()
+    if sql[0] == '>':
+      version,sql = sql[1:].split(None, 1)
+      version = int(version)
+      if version <= userVersion:
+        continue
+      maxVersion = max(maxVersion, version)
+    db.execute(sql)
+  if maxVersion > userVersion:
+    if verbose:
+      print 'upgraded to user_version %d' % maxVersion
+    db.execute("PRAGMA user_version = %d" % maxVersion)
+
 def openGlobalDatabase(filepath, create=False):
   if create:
     makeDirsFor(filepath)
@@ -414,7 +433,7 @@ def openGlobalDatabase(filepath, create=False):
     assert os.path.exists(filepath)
   db = sqlite3.connect(filepath)
   if create:
-    stmts = ["""
+    executeSQLList(db, ["""
     CREATE TABLE IF NOT EXISTS scans (
       scanned_from TEXT,
       uuid TEXT,
@@ -432,9 +451,22 @@ def openGlobalDatabase(filepath, create=False):
       total_real_size REAL,
       hash_metadata TEXT
     )
-    """]
-    for sql in stmts:
-      db.execute(sql)
+    ""","""
+    >1 ALTER TABLE scans ADD COLUMN vol_uuid TEXT
+    ""","""
+    CREATE TABLE IF NOT EXISTS volumes (
+      vol_uuid TEXT PRIMARY KEY,
+      vol_label TEXT,
+      disk_uuid TEXT,
+      disk_label TEXT,
+      mediatype TEXT,
+      fstype TEXT,
+      mount_point TEXT,
+      last_seen_from TEXT,
+      last_seen_time LONG,
+      usage TEXT
+    )
+    """])
   return db
 
 def getNodeName():
@@ -455,6 +487,7 @@ class ScanResults:
     assert cloc
     self.collection = cloc.collection
     self.url = cloc.url
+    self.vol_uuid = urlparse.urlparse(cloc.url).netloc # TODO: from cloc?
     self.start_time = sessionStartTime
     self.end_time = None
     self.num_real_files = None
@@ -488,15 +521,21 @@ class ScanResults:
   def addToScansTable(self, db):
     values = [
       getNodeName(),
-      self.collection.uuid, self.collection.name, self.url,
+      self.collection.uuid, self.collection.name, self.url, self.vol_uuid,
       self.start_time, self.end_time,
       self.num_real_files, self.num_virtual_files,
       self.num_modified, self.num_added, self.num_deleted,
       self.min_mtime, self.max_mtime,
       self.total_real_size,
-      self.hash_metadata
+      self.hash_metadata,
     ]
-    db.execute("INSERT INTO scans VALUES (?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)", values)
+    db.execute("""
+      INSERT INTO scans
+        (scanned_from,uuid,name,url,vol_uuid,start_time,end_time,
+        num_real_files,num_virtual_files,num_modified,num_added,num_deleted,
+        min_mtime,max_mtime,total_real_size,hash_metadata)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    """, values)
     db.commit()
 
   def deleteFilesNotSeenSince(self, db, t):
@@ -540,7 +579,7 @@ def openFileDatabase(filepath, create=False):
   db.execute('PRAGMA synchronous = OFF')
   db.execute('PRAGMA page_size = 4096')
   if create:
-    stmts = ["""
+    executeSQLList(db, ["""
     CREATE TABLE IF NOT EXISTS folders (
       id INTEGER NOT NULL PRIMARY KEY,
       path TEXT NOT NULL,
@@ -565,9 +604,7 @@ def openFileDatabase(filepath, create=False):
     )
     ""","""
     CREATE UNIQUE INDEX IF NOT EXISTS files_idx ON files(name,folder_id)
-    """]
-    for sql in stmts:
-      db.execute(sql)
+    """])
   return db
 
 # TODO: this should be unneccessary

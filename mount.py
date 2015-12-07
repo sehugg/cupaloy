@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import subprocess,re
+import subprocess,re,sqlite3
 from sys import platform as _platform
 from plistlib import readPlistFromString
 
@@ -20,6 +20,14 @@ class MountedVolume:
     self.vol_label = vol_label
     self.fstype = fstype
     self.mount_point = mount_point
+    self.usage = None # TODO: online/offline/removable/etc
+    
+  def updateDatabase(db):
+    db.execute("""
+    REPLACE INTO volumes (vol_uuid,vol_label,disk_uuid,disk_label,mediatype,fstype,mount_point,last_seen_from,last_seen_time,usage)
+    VALUES (?,?,?,?,?,?,?,?,?,?)
+    """, [self.vol_uuid, self.vol_label, self.disk_uuid, self.disk_label, self.mediatype, self.fstype,
+          sessionStartTime, getNodeName(), self.usage])
     
   def __repr__(self):
     return "%s:%s:%s:%s:%s:%s:%s" % (self.disk_uuid, self.disk_label, self.mediatype, self.vol_uuid, self.vol_label, self.fstype, self.mount_point)
