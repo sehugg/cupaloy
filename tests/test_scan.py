@@ -29,6 +29,11 @@ class TestScan(unittest.TestCase):
     assert runCommand(['scan','./tests/files']) == 0
     cleanup(tmpdir)
 
+  def test_scan_multiple(self):
+    tmpdir = setup()
+    assert runCommand(['scan','./tests/files','./tests/empty']) == 0
+    cleanup(tmpdir)
+
 ###
 
 if __name__ == '__main__':

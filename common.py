@@ -276,8 +276,8 @@ class CollectionLocation:
     
   def unapplyIncludes(self):
     global INCLUDES,EXCLUDES
-    INCLUDES = self.old_includes
-    EXCLUDES = self.old_excludes
+    INCLUDES[:] = self.old_includes
+    EXCLUDES[:] = self.old_excludes
 
   """
   Find the corresponding file database for this collection.
@@ -427,7 +427,7 @@ def openGlobalDatabase(filepath, create=False):
       num_deleted LONG,
       min_mtime LONG,
       max_mtime LONG,
-      total_real_size LONG,
+      total_real_size REAL,
       hash_metadata TEXT
     )
     """]
@@ -473,7 +473,7 @@ class ScanResults:
     self.end_time = long(time.time())
     row = db.execute("""
     SELECT COUNT(file_id),COUNT(*),MIN(modtime),MAX(modtime),
-      SUM(CASE WHEN file_id IS NULL THEN size ELSE 0 END)
+      SUM(CASE WHEN file_id IS NULL THEN 1.0*size ELSE 0 END)
     FROM files f
     LEFT OUTER JOIN folders p ON f.folder_id=p.id
     """, []).fetchone()
@@ -481,7 +481,7 @@ class ScanResults:
     self.num_real_files = long(row[1]) - self.num_virtual_files
     self.min_mtime = long(row[2])
     self.max_mtime = long(row[3])
-    self.total_real_size = long(row[4])
+    self.total_real_size = float(row[4])
   
   def addToScansTable(self, db):
     values = [

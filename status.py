@@ -66,7 +66,7 @@ def run(args, keywords):
     SELECT
       collidx,dups,locs,
       COUNT(*) as nfiles,
-      SUM(maxsize) as totsize,
+      SUM(1.0*maxsize) as totsize,
       SUM(minsize=maxsize) as samesize,
       SUM(mintime=maxtime) as sametime,
       SUM(minhash=maxhash) as samehash,
@@ -75,7 +75,7 @@ def run(args, keywords):
     FROM dupfiles df
     GROUP BY collidx,dups,locs
   """ % ("""
-      (SELECT SUM(size) FROM duphashes dh
+      (SELECT SUM(1.0*size) FROM duphashes dh
         WHERE dh.collidx=df.collidx
           AND dh.dups=df.dups
           AND dh.locs=df.locs)
@@ -144,18 +144,21 @@ def run(args, keywords):
       elif totsize==totcollsize and samesize==nfiles and samehash==nfiles:
         s = "Fully replicated across %d locations" % (unique_locs)
       else:
-        if find_hashes and hashsize > totsize:
+        if find_hashes and hashsize*1.0/tothashsize > totsize*1.0/totcollsize:
           s = "%s duplicated across %d locations with %s of files moved" % (
             pct(hashsize,tothashsize), unique_locs, pct(ncollfiles-nfiles,ncollfiles))
           r.append("check directory structure")
         else:
           num = 1.0*totsize*samehash
           denom = 1.0*totcollsize*nfiles
-          s = "%s replicated across %d locations" % (pct(num, denom), unique_locs)
+          reppct = pct(num, denom)
+          s = "%s replicated across %d locations" % (reppct, unique_locs)
           if last2 and unique_locs > 2:
             num2 = 1.0*(totsize+totsize2)*(samehash+samehash2)
             denom2 = 1.0*totcollsize*(nfiles+nfiles2)
-            s += ", %s across %d" % (pct(num2, denom2), unique_locs-1)
+            reppct2 = pct(num2, denom2)
+            if reppct2 != reppct:
+              s += ", %s across %d" % (reppct2, unique_locs-1)
         if scanages[0] > scan_interval_1:
           r.append("scan on %s" % cloclist[0].locname)
         elif scanages[-1] > scan_interval_2:
@@ -177,7 +180,7 @@ def run(args, keywords):
         GROUP_CONCAT(minhash)=GROUP_CONCAT(maxhash) as hashequal
       FROM dupfiles
       GROUP BY path,name
-      HAVING (NOT sizeequal OR NOT hashequal)
+      --HAVING (NOT sizeequal OR NOT hashequal)
       ORDER BY path,name
     """):
       if 1: #isIncluded(row[0]) and isIncluded(row[1]):

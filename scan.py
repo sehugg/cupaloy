@@ -7,10 +7,7 @@ import hashlib
 from common import *
 from progress import ProgressTracker
 from contextlib import closing
-try:
-  import libarchive
-except:
-  print "Could not import libarchive module: %s" % (sys.exc_info()[1])
+import libarchive
 
 # logging
 import logging
@@ -215,8 +212,8 @@ def processScanFile(scanfile):
 ###
 
 def run(args, keywords):
-  global filesdb, force, rescan, compute_hashes
-  global progress, scanres
+  global force, rescan, compute_hashes
+  global filesdb, progress, scanres
   force = 'force' in keywords # TODO?
   rescan = 'rescan' in keywords
   if rescan:
@@ -264,6 +261,8 @@ def run(args, keywords):
     scanres.addToScansTable(globaldb)
     print "Done."
     filesdb.close()
+    filesdb = None
+    scanres = None
     cloc.unapplyIncludes()
     numGood += 1
   globaldb.close()

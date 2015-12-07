@@ -189,5 +189,7 @@ have to confirm file modifications and/or deletions, ok if -> archive
 rename rewrites site db 
 case sensitivity for uuids/urls
 use collection root or .cupaloy dir for scan
+time zone GMT
+when file size is too big for SQLite INT
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;
