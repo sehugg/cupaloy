@@ -8,6 +8,7 @@ from common import *
 from progress import ProgressTracker
 from contextlib import closing
 import libarchive
+from verifier import verifyFile
 
 # logging
 import logging
@@ -125,6 +126,8 @@ def addFileEntry(db, scanfile, containerid=None):
     # TODO: scanres.num_modified += 1
     fileid = long(cur.lastrowid)
     updateHash(db, fileid, scanfile, containerid)
+    if not verifyFile(scanfile):
+      setScanError(filesdb, 'fmt', fileid, 'verify failed')
     return fileid
 
 class TarScanFile(ScanFile):
