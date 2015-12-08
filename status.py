@@ -24,6 +24,7 @@ def run(args, keywords):
   find_hashes = len(args) > 0 # TODO: for now we disable hash-finding if getting status on all collections
   clocs = getAllCollectionLocations(args)
   mergedb = getMergedFileDatabase(clocs, include_virtual=('archives' in keywords))
+  addMergedVolumeDatabase(mergedb)
   uuids = clocs.keys()
   if len(uuids)==0:
     print "No collections specified."
@@ -159,10 +160,10 @@ def run(args, keywords):
             reppct2 = pct(num2, denom2)
             if reppct2 != reppct:
               s += ", %s across %d" % (reppct2, unique_locs-1)
-        if scanages[0] > scan_interval_1:
-          r.append("scan on %s" % cloclist[0].locname)
-        elif scanages[-1] > scan_interval_2:
-          r.append("scan on %s" % cloclist[-1].locname)
+      if scanages[0] > scan_interval_1:
+        r.append("scan on %s" % cloclist[0].locname)
+      elif scanages[-1] > scan_interval_2:
+        r.append("scan on %s" % cloclist[-1].locname)
       s += '.'
       table.append((collection.name, s, string.join(r, ', ')))
     print tabulate.tabulate(table, headers=["Collection","Status","Recommendations"])

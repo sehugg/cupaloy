@@ -157,6 +157,26 @@ def getAllCollectionLocations(args):
     db.close()
   return result
 
+def addMergedVolumeDatabase(mergedb):
+  first = True
+  for dbfn in getAllHostDBFiles():
+    dbpath = os.path.join(getHomeMetaDir(), 'hosts', dbfn)
+    assert os.path.getsize(dbpath)
+    mergedb.execute("ATTACH DATABASE ? AS db", [dbpath])
+    try:
+      if first:
+        sql = "CREATE TABLE volumes AS "
+      else:
+        sql = "INSERT INTO volumes "
+      sql += "SELECT * FROM db.volumes"
+      mergedb.execute(sql)
+      first = False
+    except sqlite3.OperationalError: # TODO?
+      traceback.print_exc(file=sys.stderr)
+    finally:
+      mergedb.execute("DETACH DATABASE db")
+  return mergedb
+    
 def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
   # insert into merged db
   mergedb = sqlite3.connect(":memory:")
@@ -208,7 +228,8 @@ def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
         locidx += 1
       except sqlite3.OperationalError: # TODO?
         traceback.print_exc(file=sys.stderr)
-      mergedb.execute("DETACH DATABASE db")
+      finally:
+        mergedb.execute("DETACH DATABASE db")
     collidx += 1
   return mergedb
 

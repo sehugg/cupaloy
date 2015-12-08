@@ -126,8 +126,11 @@ def addFileEntry(db, scanfile, containerid=None):
     # TODO: scanres.num_modified += 1
     fileid = long(cur.lastrowid)
     updateHash(db, fileid, scanfile, containerid)
-    if not verifyFile(scanfile):
-      setScanError(filesdb, 'fmt', fileid, 'verify failed')
+    fmt,error = verifyFile(scanfile)
+    if error:
+      setScanError(filesdb, 'fmt', fileid, 'verify failed') # TODO
+    elif fmt:
+      scanfile.format = fmt
     return fileid
 
 class TarScanFile(ScanFile):
