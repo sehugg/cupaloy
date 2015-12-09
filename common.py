@@ -595,6 +595,15 @@ class ScanResults:
 
   def deleteFilesNotSeenSince(self, db, t):
     cur = db.cursor()
+    # add to history table
+    cur.execute("""
+    INSERT INTO history (scan_time,id,folder_id,name,size,modtime,lastseentime,hash1,hash2,io_errors,fmt_errors)
+    SELECT ?,f.id,folder_id,name,size,modtime,lastseentime,hash1,hash2,io_errors,fmt_errors FROM files f
+      JOIN folders p ON p.id=f.folder_id
+      WHERE p.file_id IS NULL
+      AND lastseentime < ?
+    """, [t, t])
+    # delete from files table
     cur.execute("""
     DELETE FROM files WHERE id IN (
       SELECT f.id FROM files f
