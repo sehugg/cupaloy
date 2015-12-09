@@ -32,6 +32,8 @@ class TestInit(unittest.TestCase):
     assert cloc.collection.uuid == uid
     assert cloc.url
     assert runCommand(['init',tmpdir]) > 0 # already exists
+    assert runCommand(['retire','Foo']) > 0 # need -f
+    assert runCommand(['-f','retire','Foo']) == 0 # deleted from db
     cleanup(tmpdir)
 
 ###

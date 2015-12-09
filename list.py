@@ -16,6 +16,7 @@ def run(args, keywords):
     datetime(min_mtime,'unixepoch'),
     datetime(max_mtime,'unixepoch')
   FROM scans
+  WHERE url in (SELECT url FROM locations)
   GROUP BY uuid
   """)
   headers = ["Collection","Last Scan","Total MB","# Files","Oldest","Newest"]

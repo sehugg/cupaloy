@@ -391,9 +391,9 @@ def getDirectoryFromFileURL(url):
 def getCollectionLocationsFromDB(globaldb):
   # select most recent scan
   rows = globaldb.execute("""
-  SELECT DISTINCT uuid,name,url,scanned_from,MAX(start_time)
-  FROM scans
-  GROUP BY uuid,url
+  SELECT collection_uuid,collection_name,url,last_scanned_from,last_scan_time
+  FROM locations
+  GROUP BY collection_uuid,url
   """)
   # TODO: timestamp?
   return [CollectionLocation(Collection(x,y),z,h,t) for x,y,z,h,t in rows]
@@ -408,18 +408,20 @@ def parseCollectionLocations(globaldb, arg):
   # match the string against recently scanned collections
   # TODO: match with config file?
   rows = globaldb.execute("""
-  SELECT uuid,name,url,scanned_from,MAX(start_time) FROM scans
-  WHERE uuid=? OR name=? or url=? 
-  GROUP BY uuid,url
-  ORDER BY MAX(start_time) DESC
+  SELECT collection_uuid,collection_name,url,last_scanned_from,last_scan_time
+  FROM locations
+  WHERE collection_uuid=? OR collection_name=? or url=? 
+  GROUP BY collection_uuid,url
+  ORDER BY last_scan_time DESC
   """, [arg, arg, arg]).fetchall()
   # exact match failed? prefix match
   if len(rows)==0:
     rows = globaldb.execute("""
-    SELECT uuid,name,url,scanned_from,MAX(start_time) FROM scans
-    WHERE uuid LIKE ?||'%' OR name LIKE ?||'%' OR url LIKE ?||'%'
-    GROUP BY uuid,url
-    ORDER BY MAX(start_time) DESC
+    SELECT collection_uuid,collection_name,url,last_scanned_from,last_scan_time
+    FROM locations
+    WHERE collection_uuid LIKE ?||'%' OR collection_name LIKE ?||'%' OR url LIKE ?||'%'
+    GROUP BY collection_uuid,url
+    ORDER BY last_scan_time DESC
     """, [arg, arg, arg]).fetchall()
   return [CollectionLocation(Collection(x,y),z,h,t) for x,y,z,h,t in rows]
 
@@ -503,6 +505,15 @@ def openGlobalDatabase(filepath, create=False):
       last_seen_time LONG,
       usage TEXT
     )
+    ""","""
+    >4 CREATE TABLE IF NOT EXISTS locations (
+      url TEXT PRIMARY KEY,
+      collection_uuid TEXT,
+      collection_name TEXT,
+      vol_uuid TEXT,
+      last_scanned_from TEXT,
+      last_scan_time LONG
+    )
     """])
   return db
 
@@ -571,6 +582,14 @@ class ScanResults:
       self.min_mtime, self.max_mtime,
       self.total_real_size,
       self.hash_metadata,
+    ])
+    db.execute("""
+      REPLACE INTO locations
+        (last_scanned_from,last_scan_time,collection_uuid,collection_name,url,vol_uuid)
+      VALUES (?,?,?,?,?,?)
+    """, [
+      getNodeName(), self.start_time,
+      self.collection.uuid, self.collection.name, self.url, self.vol_uuid
     ])
     db.commit()
 

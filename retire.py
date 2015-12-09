@@ -17,7 +17,7 @@ def run(args, keywords):
   destdbpath = cloc.getFileDatabasePath()
   # write changes?
   if keywords.get('force'):
-    globaldb.execute("DELETE FROM scans WHERE uuid=? AND url=?", [cloc.collection.uuid, cloc.url])
+    globaldb.execute("DELETE FROM locations WHERE collection_uuid=? AND url=?", [cloc.collection.uuid, cloc.url])
     if os.path.exists(destdbpath):
       os.remove(destdbpath)
     globaldb.commit()
