@@ -659,6 +659,20 @@ def openFileDatabase(filepath, create=False):
     )
     ""","""
     CREATE UNIQUE INDEX IF NOT EXISTS files_idx ON files(name,folder_id)
+    ""","""
+    >2 CREATE TABLE IF NOT EXISTS history (
+      scan_time LONG NOT NULL,
+      id INTEGER NOT NULL,
+      folder_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      size LONG,
+      modtime LONG,
+      lastseentime LONG,
+      hash1 BINARY,
+      hash2 BINARY,
+      io_errors TEXT,
+      fmt_errors TEXT
+    )
     """])
   return db
 

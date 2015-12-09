@@ -111,15 +111,23 @@ def addFileEntry(db, scanfile, containerid=None):
   mtime = fixTimestamp(mtime)
   folderid = getFolderID(db, folderpath, fileid=containerid)
   cur = db.cursor()
-  fileinfo = not rescan and cur.execute("SELECT id,size,modtime,hash1 FROM files WHERE folder_id=? AND name=? AND size=? AND modtime=? AND io_errors IS NULL", [folderid, filename, size, mtime]).fetchone()
-  if fileinfo:
-    if not fileinfo[3]: #TODO?
-      updateHash(db, fileinfo[0], scanfile, containerid)
-    cur.execute("UPDATE files SET lastseentime=? WHERE id=?", [sessionStartTime, fileinfo[0]])
-    return fileinfo
-  else:
+  fileinfo = cur.execute("""
+    SELECT id,size,modtime,lastseentime,hash1,hash2,io_errors,fmt_errors 
+    FROM files 
+    WHERE folder_id=? AND name=?
+  """, [folderid, filename]).fetchone()
+  changed = fileinfo and (fileinfo[1] != size or fileinfo[2] != mtime)
+  # rescan if changed or if IO errors or rescan flag
+  if not fileinfo or changed or fileinfo[6] or rescan:
     if verbose:
       print (folderid, folderpath, filename, size, mtime)
+    # save old file info in history table
+    if fileinfo and changed:
+      cur.execute("""
+        INSERT INTO history (scan_time,id,folder_id,name,size,modtime,lastseentime,hash1,hash2,io_errors,fmt_errors)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)
+      """, [sessionStartTime, fileinfo[0], folderid, filename, 
+            fileinfo[1], fileinfo[2], fileinfo[3], fileinfo[4], fileinfo[5], fileinfo[6], fileinfo[7]])
     cur.execute("INSERT OR REPLACE INTO files (folder_id,name,size,modtime,lastseentime,io_errors,fmt_errors) VALUES (?,?,?,?,?,?,?)",
       [folderid, filename, size, mtime, sessionStartTime, None, None])
     # TODO: num_added?
@@ -132,6 +140,11 @@ def addFileEntry(db, scanfile, containerid=None):
     elif fmt:
       scanfile.format = fmt
     return fileid
+  else:
+    if not fileinfo[4]: # add hash if missing
+      updateHash(db, fileinfo[0], scanfile, containerid)
+    cur.execute("UPDATE files SET lastseentime=? WHERE id=?", [sessionStartTime, fileinfo[0]])
+    return fileinfo
 
 class TarScanFile(ScanFile):
   def getFileHandle(self):
