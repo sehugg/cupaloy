@@ -1,4 +1,41 @@
 
+GOALS
+
+Cupaloy aids humans in the long-term preservation of their digital data by
+targeting three areas:
+
+- Replication
+- Change tracking
+- Data format analysis
+
+Replication: Since most forms of storage are subject to unforeseen events
+leading to data loss, it is best to have more than one copy stored in more
+than one location.  Cupaloy scans your files in each location and gives you
+a simple readout of how many files are up-to-date across all locations.  You
+can configure thresholds to warn you when files are not sufficiently
+replicated, or if too much time has passed between scans.
+
+Change tracking: Since all modifications to your file collections may not
+necessarily be intentional, Cupaloy helps you understand when files in your
+collections have changed.  It will give you a simple summary of what has
+changed, and asks you to confirm these changes.  For example, you might
+configure a collection so that additions are automatically accepted, but
+deletions and modifications need to be confirmed.
+
+Data format analysis: Data formats wax and wane over time, and sometimes are
+more complicated than just a file extension -- video formats, for example,
+are notoriously complicated. Cupaloy uses helper applications to analyze and
+verify the format of files, and to peek inside of archives. The goal is to
+predict when file formats start to become obsolete, and notify you so you
+can migrate to a different format before it becomes difficult to do so.
+
+Cupaloy is designed for end users, not professional curators.  We try to use
+terminology the average user will understand, and sensible defaults wherever
+possible.  Set-it-and-forget-it is the goal.
+
+
+-----
+
 cupaloy init ~/archive
 cupaloy scan ~/archive
 cupaloy list volumes
@@ -193,3 +230,11 @@ time zone GMT
 when file size is too big for SQLite INT
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;
+
+
+WITNESSES
+
+scan file/directory metadata quickly
+use other directories? (backup, cloud, syncthing...)
+hash metadata for file and directory
+sample file data as "proof"

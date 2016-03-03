@@ -16,7 +16,7 @@ VERIFIERS=[
                  '.pict','.pcx',
                  '.svg',
                  ],
-    'cmdline':	'identify -verbose $PATH',
+    'cmdline':	'identify $PATH',
     'cmdver':	'identify -version',
   },
   {
