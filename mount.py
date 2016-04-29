@@ -36,6 +36,64 @@ class MountedVolume:
 
 class LinuxMountInfo:
 
+  def __init__(self):
+    #/dev/mapper/mint--vg-root / ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
+    self.uuids = {}
+    self.mounts = {}
+    self.uuid_case_map = {}
+    with open('/proc/mounts','r') as f:
+      lines = f.readlines()
+      for l in lines:
+        dev,target,fstype,opts,arg1,arg2 = l.split()
+        if dev[0] == '/':
+          args = ["udevadm","info","-q","all","-n",dev]
+          output = subprocess.check_output(args).strip()
+          keys = {}
+          for l in output.split('\n'):
+            if l[:3] == 'E: ':
+              k,v = l[3:].split('=')
+              keys[k] = v
+          uuid = keys.get('ID_FS_UUID')
+          type = keys.get('ID_FS_TYPE')
+          label = keys.get('ID_FS_LABEL')
+          mediatype = keys.get('ID_TYPE')
+          partuuid = keys.get('ID_PART_ENTRY_UUID')
+          partlabel = keys.get('ID_SERIAL')
+          if not uuid:
+            uuid = partuuid
+          if not uuid:
+            uuid = partlabel
+          volume = MountedVolume(uuid, label, mediatype, partuuid, partlabel, fstype, target)
+          self.mounts[target] = volume
+          self.uuids[uuid] = volume
+          self.uuid_case_map[uuid.lower()] = uuid
+          if partuuid:
+            self.uuids[partuuid] = volume
+            self.uuid_case_map[partuuid.lower()] = partuuid
+
+  def getVolumeAt(self, path):
+    assert path
+    path = path.lower()
+    best = None
+    bestvol = None
+    for m,volume in self.mounts.items():
+      if path.startswith(m):
+        if not best or len(m) > len(best):
+          best = m
+          bestvol = volume
+    return bestvol
+
+  def getVolumeByUUID(self, uuid):
+    assert uuid
+    uuid2 = self.uuid_case_map.get(uuid.lower())
+    if uuid2:
+      uuid = uuid2
+    return self.uuids.get(uuid)
+
+###
+
+class LinuxMountInfo2:
+
   def findmnt(self, extra_args):
     args = ["findmnt","-Po","target,fstype,label,uuid,partlabel,partuuid"]
     args.extend(extra_args)
@@ -161,4 +219,6 @@ if __name__ == '__main__':
   print mountInfo.getVolumeByUUID("658c8dbc-f086-4d6c-9f33-180d3a008f1b")
   print mountInfo.getVolumeByUUID("2012-07-03-20-55-41-00")
   print mountInfo.getVolumeByUUID("F97D0277-5B42-3FDB-AECC-0FFDE220EC6A")
+  print mountInfo.getVolumeByUUID("581d95d2-c6f4-4a2e-b92b-de81e8b44918")
+  print mountInfo.getVolumeByUUID("6f305923-f6fd-4e89-bfc4-5fad55c556eb")
 
