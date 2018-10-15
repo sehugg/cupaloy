@@ -248,11 +248,10 @@ def run(args, keywords):
   for arg in args:
     clearFolderCache()
     cloc = None
-    try:
-      cloc = parseCollectionLocation(globaldb, arg)
-    except:
-      print sys.exc_info()[1] # TODO
-      continue
+    cloc = parseCollectionLocation(globaldb, arg)
+    #except:
+    #  print sys.exc_info() # TODO
+    #  continue
     cloc.applyIncludes()
     filesdb = openFileDatabase(cloc.getFileDatabasePath(), create=True)
     numfiles,totalsize = filesdb.execute("SELECT COUNT(*),SUM(size) FROM files JOIN folders ON folder_id=folders.id AND file_id IS NULL").fetchone()

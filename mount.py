@@ -136,6 +136,10 @@ class OSXMountInfo:
       partitions = disk.get('Partitions')
       if partitions:
         list.extend(partitions)
+      else:
+        partitions = disk.get('APFSVolumes')
+        if partitions:
+          list.extend(partitions)
       for part in list:
         mp = part.get('MountPoint')
         if mp:
