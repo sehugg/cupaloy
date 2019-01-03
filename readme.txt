@@ -228,6 +228,9 @@ case sensitivity for uuids/urls
 use collection root or .cupaloy dir for scan
 time zone GMT
 when file size is too big for SQLite INT
+print path when multiple archives on same host
+multiple archive names collide? (shouldn't need to --uuid when creating)
+s3: read from Glacier
 
 find /home/huggvey/.cupaloy/collections -name '*.db' -exec sqlite3 \{\} ".read upgrade2.sql" \;
 

@@ -12,7 +12,10 @@ class AWSS3File(ScanFile):
     self.s3obj = s3obj
 
   def getFileHandle(self):
-    return closing(self.s3obj.get(IfMatch=self.s3obj.e_tag)['Body'])
+    if self.s3obj.storage_class == 'GLACIER':
+      return None
+    else:
+      return closing(self.s3obj.get(IfMatch=self.s3obj.e_tag)['Body'])
   
 
 class AWSS3Scanner:
