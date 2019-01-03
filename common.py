@@ -274,7 +274,8 @@ class Collection:
       raise Exception("Could not write '%s': file exists" % (cfgfn))
       
   def __repr__(self):
-    return "%s (%s)" % (self.name, self.uuid)
+    #return "%s (%s)" % (self.name, self.uuid)
+    return "%s" % (self.name)
 
 class CollectionLocation:
 
