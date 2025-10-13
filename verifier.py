@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import subprocess,os.path,sys
 from common import verbose
@@ -45,9 +45,9 @@ for v in VERIFIERS:
   try:
     output = subprocess.check_output(args)
     v['enabled'] = True
-    print args,'ENABLED'
+    print(args,'ENABLED')
   except:
-    print args,sys.exc_info()
+    print(args,sys.exc_info())
 
 ###
 
@@ -78,10 +78,10 @@ def verifyFile(scanfile):
       try:
         output = subprocess.check_output(args)
         if verbose:
-          print scanfile,args,output
+          print(scanfile,args,output)
         return (v,None)
       except subprocess.CalledProcessError:
-        print args[0],scanfile
+        print(args[0],scanfile)
         besterr = sys.exc_info()[1]
   return (bestfmt,besterr)
 

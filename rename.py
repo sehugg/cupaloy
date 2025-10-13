@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os,os.path,sys,uuid
 from common import *
@@ -8,30 +8,30 @@ def run(args, keywords):
   uuid = keywords.get('uuid')
   url = keywords.get('url')
   if not name and not uuid and not url:
-    print "Must specify --name, --uuid or --url"
+    print("Must specify --name, --uuid or --url")
     return False
   # TODO: --host?
   globaldb = openGlobalDatabase(getGlobalDatabasePath())
   if not globaldb:
-    print "No host database."
+    print("No host database.")
     return False
   if len(args) != 1:
-    print "Must specify exactly one collection."
+    print("Must specify exactly one collection.")
     return False
   cloc = parseCollectionLocation(globaldb, args[0])
-  print "Renaming %s" % cloc
+  print("Renaming %s" % cloc)
   srcdbpath = cloc.getFileDatabasePath()
   if not os.path.exists(srcdbpath):
-    print "Cannot find file database @ %s" % srcdbpath
+    print("Cannot find file database @ %s" % srcdbpath)
     return False
   if name:
-    print "New name = '%s'" % name
+    print("New name = '%s'" % name)
     cloc.collection.name = name
   if uuid:
-    print "New UUID = '%s'" % uuid
+    print("New UUID = '%s'" % uuid)
     cloc.collection.uuid = uuid
   if url:
-    print "New location = '%s'" % url
+    print("New location = '%s'" % url)
     cloc.url = url
   destdbpath = cloc.getFileDatabasePath()
   # write changes?
@@ -45,7 +45,7 @@ def run(args, keywords):
     # TODO: update global db?
     return True
   else:
-    print "Not updating file unless -f (--force) is set."
+    print("Not updating file unless -f (--force) is set.")
     return False
   
 

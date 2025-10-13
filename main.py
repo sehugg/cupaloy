@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import getopt,sys,importlib,uuid
 import common
@@ -41,10 +41,10 @@ def runCommand(argv):
       else:
         arguments.append(arg)
   except getopt.GetoptError:
-    print sys.exc_info()[1]
+    print(sys.exc_info()[1])
 
   if len(commandsToRun) == 0:
-    print """
+    print("""
   main.py
     --name <name> [--uuid uuid] init [directory]
     [--force] [--rescan] [--omithash] scan [collection...]
@@ -53,13 +53,21 @@ def runCommand(argv):
     [--archives] dups
     [--name <name>] [--uuid <uuid>] rename [collection]
     retire [collection]
-  """
+  """)
     return 2
 
   common.verbose = verbose
   for cmd in commandsToRun:
-    result = importlib.import_module(cmd).run(arguments, keywords)
-    if result == False:
+    try:
+      result = importlib.import_module(cmd).run(arguments, keywords)
+      if result == False:
+        return 1
+    except Exception as e:
+      if verbose:
+        import traceback
+        traceback.print_exc()
+      else:
+        print("Error: %s" % e)
       return 1
   return 0
 

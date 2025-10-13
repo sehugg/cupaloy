@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import unittest,tempfile,shutil,os.path
 import uuid
@@ -25,7 +25,7 @@ class TestInit(unittest.TestCase):
     assert os.path.isdir(os.path.join(tmpdir, METADIR))
     assert os.path.isfile(os.path.join(tmpdir, METADIR, Collection.METAFILENAME))
     cloc = loadCollectionLocation(tmpdir)
-    print cloc
+    print(cloc)
     assert cloc
     assert cloc.collection
     assert cloc.collection.name == 'Foo'

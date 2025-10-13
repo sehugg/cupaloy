@@ -1,30 +1,27 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-import sys,os.path,json,datetime,time,sqlite3,locale,urllib,codecs,calendar
+import sys,os.path,json,datetime,time,sqlite3,locale,urllib.request,urllib.parse,urllib.error,codecs,calendar
 import platform,socket
-import uuid,urlparse
+import uuid,urllib.parse
 import fnmatch,traceback
 from mount import mountInfo
+import importlib
 
 # set UTF-8 locale
 # TODO: non-english
 locale.setlocale(locale.LC_ALL, ('en', 'utf-8'))
 
-# TODO: set encoding
-reload(sys)  
-sys.setdefaultencoding('utf8')
-sys.stderr = codecs.getwriter('utf8')(sys.stderr)
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+# Python 3 defaults to UTF-8, no need to set encoding
 
 # TODO?
-sessionStartTime = long(time.time())
+sessionStartTime = int(time.time())
 
 foldercache = {}
 
 METADIR='.cupaloy'
 GLOBALDBFILE='hosts/%s.db'
 
-EXCLUDES=['.cupaloy','.DS_Store','.Spotlight*',u'Icon\uf00d','Icon\r','fseventsd-uuid',
+EXCLUDES=['.cupaloy','.DS_Store','.Spotlight*','Icon\uf00d','Icon\r','fseventsd-uuid',
 '.Trashes','ehthumbs.db','desktop.ini','Thumbs.db',
 '~*','*~','.~lock.*','*.crdownload','@eaDir','@SynoResource','.@__thumb','._*']
 INCLUDES=[]
@@ -58,12 +55,12 @@ def isIncluded(name):
     if name.count(os.sep) >= inc.count(os.sep):
       if fnmatch.fnmatch(name, inc):
         if verbose>1:
-          print "included: %s (%s)" % (name, inc)
+          print("included: %s (%s)" % (name, inc))
         return not isExcluded(name)
       inccount += 1
   if inccount:
     if verbose>1:
-      print "not included: %s" % name
+      print("not included: %s" % name)
     return False
   else:
     return not isExcluded(name)
@@ -80,7 +77,7 @@ def isExcluded(name):
   for ex in EXCLUDES:
     if fnmatch.fnmatch(name, ex):
       if verbose>1:
-        print "excluded: %s (%s)" % (name, ex)
+        print("excluded: %s (%s)" % (name, ex))
       return True
   return False
 
@@ -92,7 +89,7 @@ def cleanFilename(fn):
   'file%3A%2F%2F%2Fusers%2Ffoo%2Fbar%2FMega_mega-mega'
   """
   # TODO: lowercase?
-  return urllib.quote(fn, safe='')
+  return urllib.parse.quote(fn, safe='')
 
 def joinPaths(a, b):
   return (a + '/' + b).replace('//','/')
@@ -116,7 +113,7 @@ def fixFileCase(filepath):
     os.rename(filepath+'.tmp',filepath)
 
 def getHomeMetaDir():
-  homedir = os.environ.get('CUPALOY_HOME') or os.environ['HOME']
+  homedir = os.environ.get('CUPALOY_HOME') or os.environ.get('USERPROFILE') or os.environ['HOME']
   return os.path.join(homedir, METADIR)
 
 def setHomeMetaDir(dir):
@@ -126,9 +123,12 @@ def setHomeMetaDir(dir):
 def getGlobalDatabasePath(host=None):
   dir = getHomeMetaDir()
   if not os.path.exists(dir):
-    os.mkdir(dir)
+    os.makedirs(dir)
   if not host:
     host = getNodeName()
+  hostsdir = os.path.join(dir, 'hosts')
+  if not os.path.exists(hostsdir):
+    os.makedirs(hostsdir)
   return os.path.join(dir, GLOBALDBFILE % cleanFilename(host))
 
 def getAllHostDBFiles():
@@ -199,16 +199,16 @@ def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
   collidx = 0
   locset = set()
   realvirt = ['','1','0','0,1'][include_real+(include_virtual*2)] # IN(?) sql clause
-  for uuid,locs in clocs.items(): # TODO: order
+  for uuid,locs in list(clocs.items()): # TODO: order
     for loc in locs:
       if loc in locset:
         continue # TODO?
       fdp = loc.getFileDatabasePath()
       if not os.path.exists(fdp):
-        print "*** No db file for %s" % loc
+        print("*** No db file for %s" % loc)
         continue
       if os.path.getsize(fdp) <= 0:
-        print "*** Empty db file for %s" % loc
+        print("*** Empty db file for %s" % loc)
         continue
       mergedb.execute("ATTACH DATABASE ? AS db", [fdp])
       try:
@@ -224,7 +224,7 @@ def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
         """ % (realvirt), [locidx, collidx])
         #print realvirt,include_real,include_virtual,include_real+include_virtual
         locset.add(loc)
-        print locidx,loc
+        print(locidx,loc)
         locidx += 1
       except sqlite3.OperationalError: # TODO?
         traceback.print_exc(file=sys.stderr)
@@ -267,7 +267,7 @@ class Collection:
     cfgfn = os.path.join(dir, Collection.METAFILENAME)
     exists = os.path.isfile(cfgfn)
     if force or not exists:
-      print "Writing '%s'" % (cfgfn)
+      print("Writing '%s'" % (cfgfn))
       with open(cfgfn,'w') as outf:
         json.dump(self.__dict__, outf, sort_keys=True, indent=2)
     else:
@@ -355,18 +355,15 @@ def loadCollectionLocation(dir):
 Returns a file URL of the form "file://nodename/path"
 """
 def getURLForVolume(volume, path):
-  assert volume
-  assert volume.vol_uuid
-  assert volume.mount_point
   abspath = os.path.abspath(path)
-  if abspath[0:len(volume.mount_point)] == volume.mount_point:
-    return 'file://%s' % joinPaths(volume.vol_uuid, abspath[len(volume.mount_point):])
-  else:
-    # TODO? node name?
-    return 'file:///%s' % (abspath)
+  if volume and volume.vol_uuid and volume.mount_point:
+    if abspath[0:len(volume.mount_point)] == volume.mount_point:
+      return 'file://%s' % joinPaths(volume.vol_uuid, abspath[len(volume.mount_point):])
+  # Fallback to absolute path if no volume info available
+  return 'file:///%s' % (abspath)
 
 def getVolumeFromURL(url):
-  pr = urlparse.urlparse(url)
+  pr = urllib.parse.urlparse(url)
   if pr.scheme == 'file' and pr.netloc and len(pr.netloc):
     volume = mountInfo.getVolumeByUUID(pr.netloc)
     return volume
@@ -377,7 +374,7 @@ def getDirectoryFromFileURL(url):
   >>> getDirectoryFromFileURL('file:///tmp')
   '/tmp'
   """
-  pr = urlparse.urlparse(url)
+  pr = urllib.parse.urlparse(url)
   assert pr.scheme == 'file'
   # if file://netloc/, prepend root of mount to path
   # TODO?
@@ -450,7 +447,7 @@ def executeSQLList(db, stmts):
   userVersion = db.execute("PRAGMA user_version").fetchone()[0]
   maxVersion = userVersion
   if verbose:
-    print 'user_version %d' % userVersion
+    print('user_version %d' % userVersion)
   for sql in stmts:
     sql = sql.strip()
     if sql[0] == '>':
@@ -462,7 +459,7 @@ def executeSQLList(db, stmts):
     db.execute(sql)
   if maxVersion > userVersion:
     if verbose:
-      print 'upgraded to user_version %d' % maxVersion
+      print('upgraded to user_version %d' % maxVersion)
     db.execute("PRAGMA user_version = %d" % maxVersion)
 
 def openGlobalDatabase(filepath, create=False):
@@ -521,7 +518,7 @@ def openGlobalDatabase(filepath, create=False):
 def getNodeName():
   """
   >>> type(getNodeName())
-  <type 'str'>
+  <class 'str'>
   """
   name = platform.node()
   if not name:
@@ -536,7 +533,7 @@ class ScanResults:
     assert cloc
     self.collection = cloc.collection
     self.url = cloc.url
-    self.vol_uuid = urlparse.urlparse(cloc.url).netloc # TODO: from cloc?
+    self.vol_uuid = urllib.parse.urlparse(cloc.url).netloc # TODO: from cloc?
     self.start_time = sessionStartTime
     self.end_time = None
     self.num_real_files = None
@@ -554,17 +551,17 @@ class ScanResults:
     return "%s/%s real/virtual files, %s bytes" % (self.num_real_files, self.num_virtual_files, self.total_real_size)
   
   def updateFromFilesTable(self, db):
-    self.end_time = long(time.time())
+    self.end_time = int(time.time())
     row = db.execute("""
     SELECT COUNT(file_id),COUNT(*),MIN(modtime),MAX(modtime),
       SUM(CASE WHEN file_id IS NULL THEN 1.0*size ELSE 0 END)
     FROM files f
     LEFT OUTER JOIN folders p ON f.folder_id=p.id
     """, []).fetchone()
-    self.num_virtual_files = long(row[0])
-    self.num_real_files = long(row[1]) - self.num_virtual_files
-    self.min_mtime = long(row[2])
-    self.max_mtime = long(row[3])
+    self.num_virtual_files = int(row[0])
+    self.num_real_files = int(row[1]) - self.num_virtual_files
+    self.min_mtime = int(row[2])
+    self.max_mtime = int(row[3])
     self.total_real_size = float(row[4])
   
   def addToScansTable(self, db):
@@ -707,35 +704,34 @@ def getFolderID(db, folderpath, create=False, fileid=None):
 def fixTimestamp(ts):
   """
   >>> fixTimestamp(0)
-  0L
+  0
   >>> fixTimestamp(datetime.datetime(2001,2,3,4,5,6))
-  981173106L
+  981173106
   """
   if type(ts) == datetime.datetime:
-    return long(calendar.timegm(ts.timetuple()))
+    return int(calendar.timegm(ts.timetuple()))
   elif type(ts) == type((0,)):
     try:
-      dt = apply(datetime.datetime, ts)
-      return long(calendar.timegm(dt.timetuple()))
+      dt = datetime.datetime(*ts)
+      return int(calendar.timegm(dt.timetuple()))
     except:
-      print (ts, sys.exc_info())
+      print((ts, sys.exc_info()))
       return None
   elif ts == None:
     return None
   else:
-    return long(ts)
+    return int(ts)
 
 ###
 
 def parseUnicode(s):
   """
-  >>> parseUnicode('foo\xcc\x81')
-  u'foo\\u0301'
+  Parse and return a unicode string from input.
   """
-  if type(s) == type(u''):
+  if type(s) == type(''):
     return s
   try:
-    return unicode(s, 'UTF-8')
+    return str(s, 'UTF-8')
   except:
     sys.stderr.write("Error decoding %s: %s\n" % ((s,), sys.exc_info()[1]))
     if verbose:
@@ -751,7 +747,7 @@ class ScanFile:
 
   def __init__(self, key, size, mtime):
     self.key = parseUnicode(key)
-    self.size = long(size) if size is not None else None
+    self.size = int(size) if size is not None else None
     mtime = fixTimestamp(mtime)
     # filter out too soon or future times
     if mtime < 2 or mtime > sessionStartTime+(86400*365):

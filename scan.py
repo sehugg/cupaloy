@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-import sys,os,os.path,time,traceback,urlparse,imp
+import sys,os,os.path,time,traceback,urllib.parse
 import tarfile,zipfile
 import sqlite3
 import hashlib
@@ -26,10 +26,10 @@ logger.addHandler(ch)
 
 def getScannerForURL(url):
   if url.startswith('file:'):
-    from scanner_file import *
+    from scanner_file import FileScanner
     return FileScanner(url)
   elif url.startswith('s3:'):
-    from scanner_aws_s3 import *
+    from scanner_aws_s3 import AWSS3Scanner
     return AWSS3Scanner(url)
   else:
     raise Exception("Unrecognized URL: %s" % url)
@@ -87,9 +87,9 @@ def updateHash(db, fileid, scanfile, containerid=None):
       hash1 = hashes[0][0:16]
       if use_longer_hash:
         hash2 = hashes[0][16:]
-        db.execute("UPDATE files SET hash1=?,hash2=? WHERE id=?", [buffer(hash1), buffer(hash2), fileid])
+        db.execute("UPDATE files SET hash1=?,hash2=? WHERE id=?", [hash1, hash2, fileid])
       else:
-        db.execute("UPDATE files SET hash1=?,hash2=NULL WHERE id=?", [buffer(hash1), fileid])
+        db.execute("UPDATE files SET hash1=?,hash2=NULL WHERE id=?", [hash1, fileid])
   except KeyboardInterrupt:
     raise
   except:
@@ -120,7 +120,7 @@ def addFileEntry(db, scanfile, containerid=None):
   # rescan if changed or if IO errors or rescan flag
   if not fileinfo or changed or fileinfo[6] or rescan:
     if verbose:
-      print (folderid, folderpath, filename, size, mtime)
+      print((folderid, folderpath, filename, size, mtime))
     # save old file info in history table
     if fileinfo and changed:
       cur.execute("""
@@ -132,7 +132,7 @@ def addFileEntry(db, scanfile, containerid=None):
       [folderid, filename, size, mtime, sessionStartTime, None, None])
     # TODO: num_added?
     # TODO: scanres.num_modified += 1
-    fileid = long(cur.lastrowid)
+    fileid = int(cur.lastrowid)
     updateHash(db, fileid, scanfile, containerid)
     fmt,error = verifyFile(scanfile)
     if error:
@@ -193,7 +193,7 @@ def processArchive(arcfile, containerid=None):
 
 def setScanErrorFromException(filesdb, type, fileid):
   msg = str(sys.exc_info()[1])
-  print 'ERROR:',type,msg
+  print('ERROR:',type,msg)
   if verbose:
     traceback.print_exc(file=sys.stderr)
   setScanError(filesdb, type, fileid, msg)
@@ -203,7 +203,7 @@ def setScanError(filesdb, type, fileid, msg):
 
 def processScanFile(scanfile):
   fileinfo = addFileEntry(filesdb, scanfile)
-  wasmodified = type(fileinfo) == type(0L)
+  wasmodified = type(fileinfo) == type(0)
   # file is added/modified (or rescan), and has file handle
   if (rescan or wasmodified) and hasattr(scanfile, 'getFileHandle'):
     fileid = fileinfo if wasmodified else fileinfo[0]
@@ -236,13 +236,13 @@ def run(args, keywords):
   force = 'force' in keywords # TODO?
   rescan = 'rescan' in keywords
   if rescan:
-    print "Rescanning."
+    print("Rescanning.")
   if 'nohash' in keywords:
     compute_hashes = False
-    print "No hashes."
+    print("No hashes.")
   globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
   if len(args)==0:
-    print "Must specify at least one collection."
+    print("Must specify at least one collection.")
     return False
   numGood = 0
   for arg in args:
@@ -260,7 +260,7 @@ def run(args, keywords):
       progress.pushGoal(numfiles,totalsize)
     scanres = ScanResults(cloc)
     scanner = getScannerForURL(cloc.url)
-    print "Scanning %s" % (str(cloc))
+    print("Scanning %s" % (str(cloc)))
     num_real_files = 0
     for scanfile in scanner.scan():
       if scanfile:
@@ -268,18 +268,18 @@ def run(args, keywords):
         filesdb.commit()
         num_real_files += 1
     if num_real_files <= 0:
-      print "No files found."
+      print("No files found.")
       continue
-    print "Scan complete, updating database..."
+    print("Scan complete, updating database...")
     numdeleted = scanres.deleteFilesNotSeenSince(filesdb, sessionStartTime)
     numorphaned = scanres.deleteOrphanedFiles(filesdb)
     if numdeleted or numorphaned:
-      print "%d files removed, %d orphaned" % (numdeleted, numorphaned)
+      print("%d files removed, %d orphaned" % (numdeleted, numorphaned))
     scanres.updateFromFilesTable(filesdb)
-    print scanres
+    print(scanres)
     scanres.addToScansTable(globaldb)
     cloc.updateVolume(globaldb)
-    print "Done."
+    print("Done.")
     filesdb.close()
     filesdb = None
     scanres = None

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os,os.path,sys,uuid
 import tabulate
@@ -20,6 +20,6 @@ def run(args, keywords):
   GROUP BY uuid
   """)
   headers = ["Collection","Last Scan","Total MB","# Files","Oldest","Newest"]
-  print
-  print tabulate.tabulate(results.fetchall(), headers=headers)
-  print
+  print()
+  print(tabulate.tabulate(results.fetchall(), headers=headers))
+  print()

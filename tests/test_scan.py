@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-import unittest,tempfile,shutil,os.path
+import unittest,tempfile,shutil,os,os.path
 import uuid
 from common import *
 from main import runCommand

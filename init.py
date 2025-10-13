@@ -1,20 +1,20 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-import os,os.path,sys,uuid,urlparse
+import os,os.path,sys,uuid,urllib.parse
 from common import *
 from mount import mountInfo
 
 def run(args, keywords):
   name = keywords.get('name')
   if not name:
-    print "Must specify --name"
+    print("Must specify --name")
     return False
   if len(args) != 1:
-    print "Must specify exactly one existing directory or URL."
+    print("Must specify exactly one existing directory or URL.")
     return False
   
   arg = args[0]
-  uc = urlparse.urlparse(arg)
+  uc = urllib.parse.urlparse(arg)
   if os.path.isdir(arg):
     # TODO: exists?
     path = arg
@@ -32,11 +32,11 @@ def run(args, keywords):
     uid = uuid.uuid3(uuid.NAMESPACE_URL, arg)
     cl = CollectionLocation(Collection(uid, name), url)
   else:
-    print "Must specify exactly one existing directory or URL."
+    print("Must specify exactly one existing directory or URL.")
     return False
 
   # TODO: exists in host db?  
   globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
   ScanResults(cl).addToScansTable(globaldb)
   globaldb.commit()
-  print "Created %s" % (cl)
+  print("Created %s" % (cl))

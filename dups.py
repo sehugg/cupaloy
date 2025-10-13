@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os,os.path,sys,uuid,sqlite3,math
 import tabulate
@@ -18,9 +18,9 @@ def run(args, keywords):
 
   clocs = getAllCollectionLocations(args)
   mergedb = getMergedFileDatabase(clocs, include_virtual=('archives' in keywords))
-  uuids = clocs.keys()
+  uuids = list(clocs.keys())
   if len(uuids)==0:
-    print "No collections specified."
+    print("No collections specified.")
     return False
     
   mergedb.execute("""
@@ -61,15 +61,15 @@ def run(args, keywords):
     for colls,locs,dups,nfiles,totsize,name in results
   ]
   headers = ["Colls","Locs","# Dups","# Files","Size MB","Sample Filename"]
-  print
-  print tabulate.tabulate(table, headers=headers)
-  print
+  print()
+  print(tabulate.tabulate(table, headers=headers))
+  print()
 
   if 0:
     for row in mergedb.execute("SELECT dups,collidx,locs,path,name,minsize,maxsize,mintime,maxtime FROM dupfiles WHERE dups=1 ORDER BY collidx,locs,path,name"):
       if isIncluded(row[3]) and isIncluded(row[4]):
-        print row
+        print(row)
   if 0:
     for row in mergedb.execute("SELECT dups,collidx,locs,path,name,minsize,maxsize,mintime,maxtime FROM dupfiles WHERE mintime!=maxtime ORDER BY collidx,locs,path,name"):
       if isIncluded(row[3]) and isIncluded(row[4]):
-        print row
+        print(row)

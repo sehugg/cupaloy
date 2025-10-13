@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-import os.path,urlparse
+import os.path,urllib.parse
 import boto3
 from common import *
 from contextlib import closing
@@ -21,12 +21,12 @@ class AWSS3File(ScanFile):
 class AWSS3Scanner:
 
   def __init__(self, url):
-    pr = urlparse.urlparse(url)
+    pr = urllib.parse.urlparse(url)
     assert pr.scheme == 's3' 
-    print "Connecting to S3..."
+    print("Connecting to S3...")
     self.s3conn = boto3.resource('s3')
     self.s3 = boto3.client('s3')
-    print "Using bucket '%s'" % pr.netloc
+    print("Using bucket '%s'" % pr.netloc)
     self.bucket = self.s3conn.Bucket(pr.netloc)
 
   def scan(self):
@@ -42,7 +42,7 @@ class AWSS3Scanner:
 
 if __name__ == '__main__':
   for x in AWSS3Scanner("s3://assets.puzzlingplans.com").scan():
-    print x
+    print(x)
     with x.getFileHandle() as f:
-      print len(f.read())
+      print(len(f.read()))
       

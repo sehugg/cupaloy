@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-import os.path,urlparse
+import os.path,urllib.parse
 from common import *
 from mount import *
 
@@ -14,7 +14,7 @@ class FilesystemFile(ScanFile):
     return open(self.path, 'rb')
 
 def walkError(err):
-  print "Error walking filesystem: %s" % err
+  print("Error walking filesystem: %s" % err)
   # TODO
 
 class FileScanner:
@@ -31,11 +31,11 @@ class FileScanner:
     # TODO: what to do with symlinks? cycles?
     for dirName, subdirList, fileList in os.walk(startDir, topdown=True, onerror=walkError, followlinks=False):
       if verbose:
-        print 'dir:',dirName
+        print('dir:',dirName)
       containerKey = dirName[len(self.rootDir)+1:] # TODO: slashes matter
-      subdirList[:] = filter(lambda dir: isIncluded(os.path.join(containerKey, dir) + os.sep), subdirList)
+      subdirList[:] = [dir for dir in subdirList if isIncluded(os.path.join(containerKey, dir) + os.sep)]
       if verbose:
-        print 'subdirs:',containerKey,subdirList
+        print('subdirs:',containerKey,subdirList)
       if isIncluded(containerKey):
         for filePath in fileList:
           if isIncluded(filePath):
@@ -55,7 +55,7 @@ class FileScanner:
       size = stat.st_size
       return FilesystemFile(key, size, mtime, path)
     else:
-      print "Not a regular file: %s" % path
+      print("Not a regular file: %s" % path)
       return None
 
 

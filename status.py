@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-import os,os.path,sys,uuid,sqlite3,math,urlparse,string
+import os,os.path,sys,uuid,sqlite3,math,urllib.parse,string
 import tabulate
 from common import *
 
@@ -25,9 +25,9 @@ def run(args, keywords):
   clocs = getAllCollectionLocations(args)
   mergedb = getMergedFileDatabase(clocs, include_virtual=('archives' in keywords))
   addMergedVolumeDatabase(mergedb)
-  uuids = clocs.keys()
+  uuids = list(clocs.keys())
   if len(uuids)==0:
-    print "No collections specified."
+    print("No collections specified.")
     return False
 
   mergedb.execute("""
@@ -115,14 +115,14 @@ def run(args, keywords):
   ]
   headers = ["Collection","# Copies","Locations","# Files","Total MB","Coverage","=Size","=Hash","=Time","Errors",
     "Hash Match" if find_hashes else '']
-  print
-  print tabulate.tabulate(table, headers=headers)
-  print
+  print()
+  print(tabulate.tabulate(table, headers=headers))
+  print()
   
   if 1:
     # TODO: what if --archives?
     table = []
-    for uuid,cloclist in clocs.items():
+    for uuid,cloclist in list(clocs.items()):
       collidx = uuids.index(uuid)
       rows = [row for row in results if row[0] == collidx]
       if len(rows)==0:
@@ -133,7 +133,7 @@ def run(args, keywords):
       if last2:
         collidx2,dups2,locs2,nfiles2,totsize2,samesize2,sametime2,samehash2,nerrors2,hashsize2,ncollfiles2,totcollsize2,tothashsize2 = last2
       collection = cloclist[0].collection
-      netlocs = [string.join(urlparse.urlparse(cloc.url)[0:2],'://') for cloc in cloclist]
+      netlocs = [string.join(urllib.parse.urlparse(cloc.url)[0:2],'://') for cloc in cloclist]
       netlocset = set(netlocs)
       unique_locs = len(netlocset)
       scanages = [sessionStartTime - fixTimestamp(cloc.scantime) for cloc in cloclist]
@@ -166,7 +166,7 @@ def run(args, keywords):
         r.append("scan on %s" % cloclist[-1].locname)
       s += '.'
       table.append((collection.name, s, string.join(r, ', ')))
-    print tabulate.tabulate(table, headers=["Collection","Status","Recommendations"])
+    print(tabulate.tabulate(table, headers=["Collection","Status","Recommendations"]))
 
   if 'list' in keywords:
     lastpath = ''
@@ -186,9 +186,9 @@ def run(args, keywords):
     """):
       if 1: #isIncluded(row[0]) and isIncluded(row[1]):
         if lastpath != row[0]:
-          print row[0]
+          print(row[0])
           lastpath = row[0]
-        print "%40s %5d %10s %10s %10d %d %d" % row[1:]
+        print("%40s %5d %10s %10s %10d %d %d" % row[1:])
   if 0:
     for row in mergedb.execute("""
       SELECT COUNT(*),dups,collidx,locs,path,name,SUM(minsize),SUM(maxsize)
@@ -198,12 +198,12 @@ def run(args, keywords):
       ORDER BY collidx,locs,path
     """):
       if isIncluded(row[4]) and isIncluded(row[5]):
-        print row
+        print(row)
   if 0:
     for row in mergedb.execute("SELECT dups,collidx,locs,path,name,minsize,maxsize,mintime,maxtime FROM dupfiles WHERE dups=1 ORDER BY collidx,locs,path,name"):
       if isIncluded(row[3]) and isIncluded(row[4]):
-        print row
+        print(row)
   if 0:
     for row in mergedb.execute("SELECT dups,collidx,locs,path,name,minsize,maxsize,mintime,maxtime FROM dupfiles WHERE mintime!=maxtime ORDER BY collidx,locs,path,name"):
       if isIncluded(row[3]) and isIncluded(row[4]):
-        print row
+        print(row)

@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import subprocess,re,sqlite3
 from sys import platform as _platform
-from plistlib import readPlistFromString
+import plistlib
 
 ###
 
@@ -76,7 +76,7 @@ class LinuxMountInfo:
     path = path.lower()
     best = None
     bestvol = None
-    for m,volume in self.mounts.items():
+    for m,volume in list(self.mounts.items()):
       if path.startswith(m):
         if not best or len(m) > len(best):
           best = m
@@ -129,7 +129,7 @@ class OSXMountInfo:
   # TODO: CoreStorage
   def __init__(self):
     xml = subprocess.check_output(["diskutil","list","-plist"])
-    plist = readPlistFromString(xml)
+    plist = plistlib.loads(xml)
     mounts = []
     for disk in plist['AllDisksAndPartitions']:
       list = [disk]
@@ -153,7 +153,7 @@ class OSXMountInfo:
       xml = subprocess.check_output(["diskutil","info","-plist",path])
     except subprocess.CalledProcessError:
       return None
-    plist = readPlistFromString(xml)
+    plist = plistlib.loads(xml)
     disk_uuid = plist.get('DiskUUID')
     disk_name = plist.get('Content')
     vol_uuid = plist.get('VolumeUUID')
@@ -212,17 +212,17 @@ else:
 ###
 
 if __name__ == '__main__':
-  print mountInfo.getVolumeAt("/")
-  print mountInfo.getVolumeAt("/tmp")
-  print mountInfo.getVolumeAt("/media/huggvey/ISOIMAGE/boot")
-  print mountInfo.getVolumeAt("/Volumes/Passport/hdbackup")
-  print mountInfo.getVolumeAt("/Volumes/My Passport")
-  print mountInfo.getVolumeAt("/Volumes/my passport")
-  print mountInfo.getVolumeByUUID("My Passport")
-  print mountInfo.getVolumeByUUID("my passport")
-  print mountInfo.getVolumeByUUID("658c8dbc-f086-4d6c-9f33-180d3a008f1b")
-  print mountInfo.getVolumeByUUID("2012-07-03-20-55-41-00")
-  print mountInfo.getVolumeByUUID("F97D0277-5B42-3FDB-AECC-0FFDE220EC6A")
-  print mountInfo.getVolumeByUUID("581d95d2-c6f4-4a2e-b92b-de81e8b44918")
-  print mountInfo.getVolumeByUUID("6f305923-f6fd-4e89-bfc4-5fad55c556eb")
+  print(mountInfo.getVolumeAt("/"))
+  print(mountInfo.getVolumeAt("/tmp"))
+  print(mountInfo.getVolumeAt("/media/huggvey/ISOIMAGE/boot"))
+  print(mountInfo.getVolumeAt("/Volumes/Passport/hdbackup"))
+  print(mountInfo.getVolumeAt("/Volumes/My Passport"))
+  print(mountInfo.getVolumeAt("/Volumes/my passport"))
+  print(mountInfo.getVolumeByUUID("My Passport"))
+  print(mountInfo.getVolumeByUUID("my passport"))
+  print(mountInfo.getVolumeByUUID("658c8dbc-f086-4d6c-9f33-180d3a008f1b"))
+  print(mountInfo.getVolumeByUUID("2012-07-03-20-55-41-00"))
+  print(mountInfo.getVolumeByUUID("F97D0277-5B42-3FDB-AECC-0FFDE220EC6A"))
+  print(mountInfo.getVolumeByUUID("581d95d2-c6f4-4a2e-b92b-de81e8b44918"))
+  print(mountInfo.getVolumeByUUID("6f305923-f6fd-4e89-bfc4-5fad55c556eb"))
 
