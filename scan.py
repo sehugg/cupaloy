@@ -72,7 +72,7 @@ def computeHashOfFile(f, digests, bufsize=0x1000):
 def computeHash(scanfile, hashfn):
   if not compute_hashes:
     return None
-  if scanfile.size <= 0:
+  if scanfile.size is None or scanfile.size <= 0:
     return None
   if not hasattr(scanfile, 'getFileHandle'):
     return None

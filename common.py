@@ -739,9 +739,9 @@ def parseUnicode(s):
     # http://stackoverflow.com/questions/18648154/read-lines-of-a-textfile-and-getting-charmap-decode-error
     # TODO?
     try:
-      return s.decode('cp1252')
+      return str(s, 'cp1252')
     except:
-      return s.decode('cp850')
+      return str(s, 'cp850')
 
 class ScanFile:
 
@@ -750,7 +750,7 @@ class ScanFile:
     self.size = int(size) if size is not None else None
     mtime = fixTimestamp(mtime)
     # filter out too soon or future times
-    if mtime < 2 or mtime > sessionStartTime+(86400*365):
+    if mtime is not None and (mtime < 2 or mtime > sessionStartTime+(86400*365)):
       mtime = None
     self.mtime = mtime
   
