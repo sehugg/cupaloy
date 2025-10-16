@@ -133,7 +133,7 @@ def run(args, keywords):
       if last2:
         collidx2,dups2,locs2,nfiles2,totsize2,samesize2,sametime2,samehash2,nerrors2,hashsize2,ncollfiles2,totcollsize2,tothashsize2 = last2
       collection = cloclist[0].collection
-      netlocs = [string.join(urllib.parse.urlparse(cloc.url)[0:2],'://') for cloc in cloclist]
+      netlocs = ['://'.join(urllib.parse.urlparse(cloc.url)[0:2]) for cloc in cloclist]
       netlocset = set(netlocs)
       unique_locs = len(netlocset)
       scanages = [sessionStartTime - fixTimestamp(cloc.scantime) for cloc in cloclist]
@@ -165,7 +165,7 @@ def run(args, keywords):
       elif scanages[-1] > scan_interval_2:
         r.append("scan on %s" % cloclist[-1].locname)
       s += '.'
-      table.append((collection.name, s, string.join(r, ', ')))
+      table.append((collection.name, s, ', '.join(r)))
     print(tabulate.tabulate(table, headers=["Collection","Status","Recommendations"]))
 
   if 'list' in keywords:
@@ -207,3 +207,5 @@ def run(args, keywords):
     for row in mergedb.execute("SELECT dups,collidx,locs,path,name,minsize,maxsize,mintime,maxtime FROM dupfiles WHERE mintime!=maxtime ORDER BY collidx,locs,path,name"):
       if isIncluded(row[3]) and isIncluded(row[4]):
         print(row)
+
+  mergedb.close()

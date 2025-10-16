@@ -35,8 +35,9 @@ def run(args, keywords):
     print("Must specify exactly one existing directory or URL.")
     return False
 
-  # TODO: exists in host db?  
+  # TODO: exists in host db?
   globaldb = openGlobalDatabase(getGlobalDatabasePath(), create=True)
   ScanResults(cl).addToScansTable(globaldb)
   globaldb.commit()
+  globaldb.close()
   print("Created %s" % (cl))

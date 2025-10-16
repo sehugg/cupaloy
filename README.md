@@ -176,3 +176,17 @@ The `CUPALOY_HOME` environment variable can override the default `~/.cupaloy` lo
 ## License
 
 See LICENSE file for details.
+
+## Future Ideas
+
+- Go port
+- Handle secrets / private data / keys
+- Help with personal file organization
+- Detect public archives (e.g. git)
+- De-duplication
+- Re-organization
+- AI assisted features
+  - Tagging (home, personal, work, oss...)
+  - File format detection / diagnostics
+  - Lifecycle assessment
+- Progressive hashing (first X bytes, last X bytes, full file)

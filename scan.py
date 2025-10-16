@@ -56,9 +56,9 @@ use_longer_hash = False # TODO: option
 def computeHashOfFile(f, digests, bufsize=0x1000):
   """
   >>> import binascii
-  >>> computeHashOfFile(open('tests/files/root/emptyfile.txt','r'), [hashlib.md5()])
-  >>> binascii.hexlify(computeHashOfFile(open('tests/files/archives/root/rabin.tgz.bz2','r'), [hashlib.md5()])[0])
-  '704ca9f2a35f52960f4f94926991241b'
+  >>> computeHashOfFile(open('tests/files/root/emptyfile.txt','rb'), [hashlib.md5()])
+  >>> binascii.hexlify(computeHashOfFile(open('tests/files/archives/root/rabin.tgz.bz2','rb'), [hashlib.md5()])[0])
+  b'704ca9f2a35f52960f4f94926991241b'
   """
   arr = f.read(bufsize)
   if len(arr)==0:

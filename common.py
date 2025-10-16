@@ -171,6 +171,7 @@ def addMergedVolumeDatabase(mergedb):
       sql += "SELECT * FROM db.volumes"
       mergedb.execute(sql)
       first = False
+      mergedb.commit()
     except sqlite3.OperationalError: # TODO?
       traceback.print_exc(file=sys.stderr)
     finally:
@@ -226,6 +227,7 @@ def getMergedFileDatabase(clocs, include_real=True, include_virtual=False):
         locset.add(loc)
         print(locidx,loc)
         locidx += 1
+        mergedb.commit()
       except sqlite3.OperationalError: # TODO?
         traceback.print_exc(file=sys.stderr)
       finally:

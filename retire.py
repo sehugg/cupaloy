@@ -21,9 +21,11 @@ def run(args, keywords):
     if os.path.exists(destdbpath):
       os.remove(destdbpath)
     globaldb.commit()
+    globaldb.close()
     print("Removed %s" % destdbpath)
     return True
   else:
+    globaldb.close()
     print("Not updating file unless -f (--force) is set.")
     return False
   

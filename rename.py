@@ -42,9 +42,11 @@ def run(args, keywords):
     cfgfn = os.path.join(getDirectoryFromFileURL(cloc.url), METADIR)
     assert os.path.exists(cfgfn)
     cloc.collection.write(cfgfn, True)
+    globaldb.close()
     # TODO: update global db?
     return True
   else:
+    globaldb.close()
     print("Not updating file unless -f (--force) is set.")
     return False
   

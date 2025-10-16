@@ -23,3 +23,4 @@ def run(args, keywords):
   print()
   print(tabulate.tabulate(results.fetchall(), headers=headers))
   print()
+  globaldb.close()
